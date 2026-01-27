@@ -123,7 +123,7 @@
                 <a href="{{ route('control.inventory') }}" wire:navigate 
                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.inventory') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fas fa-box w-5 text-center"></i>
-                    <span>Inventory</span>
+                    <span>Products</span>
                 </a>
                 <a href="{{ route('control.teams') }}" wire:navigate 
                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.teams') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}">

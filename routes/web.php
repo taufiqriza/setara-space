@@ -52,10 +52,8 @@ Route::middleware('auth')->prefix('control')->name('control.')->group(function (
         return view('control.report');
     })->name('report');
     
-    // Inventory
-    Route::get('/inventory', function () {
-        return view('control.inventory');
-    })->name('inventory');
+    // Inventory (Livewire component)
+    Route::get('/inventory', App\Livewire\Control\Inventory\ProductManager::class)->name('inventory');
     
     // Teams (superadmin only)
     Route::get('/teams', function () {

@@ -39,11 +39,26 @@ class PosPage extends Component
     // Order tracking
     public string $orderStatus = 'open'; // open/closed
 
+    // Receipt Modal
+    public bool $showReceiptModal = false;
+    public ?array $lastOrder = null;
+    
+    // Order Detail Modal (Tracking)
+    public bool $showOrderDetailModal = false;
+    public ?Order $selectedOrder = null;
+
     protected $listeners = ['refreshPos' => '$refresh'];
 
     public function mount()
     {
         $this->taxRate = 10; // Default 10%
+    }
+    
+    public function getCurrentOrderNumberProperty()
+    {
+        // Calculate next order number
+        $todayCount = Order::whereDate('created_at', today())->count();
+        return '#' . str_pad($todayCount + 1, 3, '0', STR_PAD_LEFT);
     }
 
     public function render()
@@ -64,7 +79,8 @@ class PosPage extends Component
         $tables = Table::where('is_active', true)->get();
         
         $recentOrders = Order::with(['user', 'table'])
-            ->whereIn('status', ['pending', 'on_kitchen', 'all_done', 'to_be_served'])
+            ->whereIn('status', ['pending', 'on_kitchen', 'to_be_served'])
+            ->whereDate('created_at', today())
             ->latest()
             ->take(10)
             ->get();
@@ -74,6 +90,7 @@ class PosPage extends Component
             'products' => $products,
             'tables' => $tables,
             'recentOrders' => $recentOrders,
+            'currentOrderNumber' => $this->currentOrderNumber,
         ])->layout('layouts.control', ['title' => 'Point of Sales']);
     }
 
@@ -245,10 +262,16 @@ class PosPage extends Component
         }
 
         try {
-            DB::transaction(function () {
+            $orderData = DB::transaction(function () {
                 // Generate order number
-                $lastOrder = Order::whereDate('created_at', today())->count();
-                $orderNumber = '#' . str_pad($lastOrder + 1, 3, '0', STR_PAD_LEFT);
+                $orderNumber = $this->currentOrderNumber;
+                
+                // Get table name if exists
+                $tableName = null;
+                if ($this->tableId) {
+                    $table = Table::find($this->tableId);
+                    $tableName = $table ? $table->name : null;
+                }
                 
                 // Create order
                 $order = Order::create([
@@ -269,6 +292,7 @@ class PosPage extends Component
                     'paid_at' => now(),
                 ]);
                 
+                $orderItems = [];
                 // Create order items
                 foreach ($this->cartItems as $item) {
                     $order->items()->create([
@@ -279,23 +303,79 @@ class PosPage extends Component
                         'subtotal' => $item['subtotal'],
                         'notes' => $item['notes'] ?? null,
                     ]);
+                    
+                    $orderItems[] = [
+                        'name' => $item['name'],
+                        'quantity' => $item['quantity'],
+                        'subtotal' => $item['subtotal'],
+                    ];
                 }
                 
                 // Update table status if dine in
                 if ($this->tableId) {
                     Table::find($this->tableId)->update(['status' => 'occupied']);
                 }
+                
+                return [
+                    'order_number' => $orderNumber,
+                    'customer_name' => $this->customerName,
+                    'table_name' => $tableName,
+                    'order_type' => $this->orderType,
+                    'subtotal' => $this->subtotal,
+                    'tax_amount' => $this->taxAmount,
+                    'total' => $this->total,
+                    'payment_method' => $this->paymentMethod,
+                    'items' => $orderItems,
+                ];
             });
+            
+            // Set last order for receipt
+            $this->lastOrder = $orderData;
+            $this->showReceiptModal = true;
             
             // Reset form
             $this->reset(['cartItems', 'customerName', 'tableId', 'promoCode', 'paymentMethod']);
             $this->orderType = 'dine_in';
             $this->calculateTotals();
             
-            session()->flash('success', 'Order berhasil dibuat!');
+            session()->flash('success', 'Order created successfully!');
             
         } catch (\Exception $e) {
-            session()->flash('error', 'Gagal membuat order: ' . $e->getMessage());
+            session()->flash('error', 'Failed to create order: ' . $e->getMessage());
+        }
+    }
+    
+    public function closeReceiptModal()
+    {
+        $this->showReceiptModal = false;
+        $this->lastOrder = null;
+    }
+    
+    // Order Viewing (Bottom Bar)
+    public function viewOrder($orderId)
+    {
+        $this->selectedOrder = Order::with(['items', 'table', 'user'])->find($orderId);
+        if ($this->selectedOrder) {
+            $this->showOrderDetailModal = true;
+        }
+    }
+    
+    public function closeOrderDetailModal()
+    {
+        $this->showOrderDetailModal = false;
+        $this->selectedOrder = null;
+    }
+    
+    public function updateOrderStatus($status)
+    {
+        if ($this->selectedOrder) {
+            $this->selectedOrder->update(['status' => $status]);
+            
+            // If status is all_done or completed, maybe close the modal?
+            // Let's keep it open or close depending on UX. Close is better for quick workflow.
+            $this->closeOrderDetailModal();
+            
+            session()->flash('success', 'Order status updated to ' . ucfirst(str_replace('_', ' ', $status)));
         }
     }
 
