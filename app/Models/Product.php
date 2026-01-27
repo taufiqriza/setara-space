@@ -16,11 +16,13 @@ class Product extends Model
         'price',
         'image',
         'is_active',
+        'is_favorite',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'is_active' => 'boolean',
+        'is_favorite' => 'boolean',
     ];
 
     protected static function boot()

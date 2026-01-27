@@ -46,8 +46,29 @@ class PosPage extends Component
     // Order Detail Modal (Tracking)
     public bool $showOrderDetailModal = false;
     public ?Order $selectedOrder = null;
+    
+    // Store Status
+    public string $storeStatus = 'open'; // open, closed
+    public bool $showStoreStatusModal = false;
 
     protected $listeners = ['refreshPos' => '$refresh'];
+
+    public function openStoreStatusModal()
+    {
+        $this->showStoreStatusModal = true;
+    }
+
+    public function closeStoreStatusModal()
+    {
+        $this->showStoreStatusModal = false;
+    }
+
+    public function toggleStoreStatus()
+    {
+        $this->storeStatus = $this->storeStatus === 'open' ? 'closed' : 'open';
+        $this->closeStoreStatusModal();
+        session()->flash('success', 'Store is now ' . ucfirst($this->storeStatus));
+    }
 
     public function mount()
     {
@@ -170,6 +191,11 @@ class PosPage extends Component
         
         $this->calculateTotals();
         $this->closeProductModal();
+        
+        $this->dispatch('swal:compact', [
+            'type' => 'success',
+            'text' => 'Item added to cart'
+        ]);
     }
 
     public function quickAddToCart($productId)
@@ -202,6 +228,11 @@ class PosPage extends Component
         }
         
         $this->calculateTotals();
+        
+        $this->dispatch('swal:compact', [
+            'type' => 'success',
+            'text' => 'Item added +1'
+        ]);
     }
 
     public function incrementCartItem($index)
@@ -223,6 +254,7 @@ class PosPage extends Component
                     $this->cartItems[$index]['quantity'] * $this->cartItems[$index]['price'];
             } else {
                 $this->removeCartItem($index);
+                return; // Remove handles notification
             }
             $this->calculateTotals();
         }
@@ -234,6 +266,11 @@ class PosPage extends Component
             unset($this->cartItems[$index]);
             $this->cartItems = array_values($this->cartItems);
             $this->calculateTotals();
+            
+            $this->dispatch('swal:compact', [
+                'type' => 'info',
+                'text' => 'Item removed'
+            ]);
         }
     }
 
@@ -252,12 +289,18 @@ class PosPage extends Component
     public function placeOrder()
     {
         if (empty($this->cartItems)) {
-            session()->flash('error', 'Keranjang kosong!');
+            $this->dispatch('swal:compact', [
+                'type' => 'error',
+                'text' => 'Cart is empty!'
+            ]);
             return;
         }
         
         if (!$this->paymentMethod) {
-            session()->flash('error', 'Pilih metode pembayaran!');
+            $this->dispatch('swal:compact', [
+                'type' => 'error',
+                'text' => 'Select a payment method!'
+            ]);
             return;
         }
 
@@ -316,6 +359,28 @@ class PosPage extends Component
                     Table::find($this->tableId)->update(['status' => 'occupied']);
                 }
                 
+                
+                // Log Activity
+                \App\Models\Activity::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'order_placed',
+                    'subject_type' => Order::class,
+                    'subject_id' => $order->id,
+                    'description' => "Order #{$orderNumber} placed by " . ($this->customerName ?: 'Customer'),
+                    'properties' => [
+                        'amount' => $this->total,
+                        'items_count' => count($orderItems),
+                        'items' => array_map(function($item) {
+                            return [
+                                'name' => $item['name'],
+                                'qty' => $item['quantity'],
+                                'price' => $item['subtotal'] / $item['quantity'] // Recalculate unit price safely
+                            ];
+                        }, $orderItems)
+                    ],
+                    'ip_address' => request()->ip(),
+                ]);
+
                 return [
                     'order_number' => $orderNumber,
                     'customer_name' => $this->customerName,
@@ -338,10 +403,18 @@ class PosPage extends Component
             $this->orderType = 'dine_in';
             $this->calculateTotals();
             
-            session()->flash('success', 'Order created successfully!');
+            $this->dispatch('swal:modal', [
+                'type' => 'success',
+                'title' => 'Order Success!',
+                'text' => 'Order has been placed successfully.'
+            ]);
             
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to create order: ' . $e->getMessage());
+            $this->dispatch('swal:modal', [
+                'type' => 'error',
+                'title' => 'Order Failed',
+                'text' => 'Failed: ' . $e->getMessage()
+            ]);
         }
     }
     
@@ -375,7 +448,10 @@ class PosPage extends Component
             // Let's keep it open or close depending on UX. Close is better for quick workflow.
             $this->closeOrderDetailModal();
             
-            session()->flash('success', 'Order status updated to ' . ucfirst(str_replace('_', ' ', $status)));
+            $this->dispatch('swal:compact', [
+                'type' => 'success',
+                'text' => 'Status updated to ' . ucfirst(str_replace('_', ' ', $status))
+            ]);
         }
     }
 
@@ -383,5 +459,10 @@ class PosPage extends Component
     {
         $this->reset(['cartItems', 'customerName', 'promoCode', 'paymentMethod']);
         $this->calculateTotals();
+        
+        $this->dispatch('swal:compact', [
+            'type' => 'info',
+            'text' => 'Cart cleared'
+        ]);
     }
 }

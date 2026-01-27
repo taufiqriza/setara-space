@@ -9,7 +9,21 @@ use App\Livewire\Auth\Login;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    return view('frontend.home');
+    $favorites = App\Models\Product::with('category')
+        ->where('is_favorite', true)
+        ->where('is_active', true)
+        ->take(4)
+        ->get();
+    
+    // Fetch all active products that are NOT favorites
+    $others = App\Models\Product::with('category')
+        ->where('is_favorite', false)
+        ->where('is_active', true)
+        ->inRandomOrder()
+        ->take(24) 
+        ->get();
+
+    return view('frontend.home', compact('favorites', 'others'));
 })->name('home');
 
 /*
@@ -42,26 +56,20 @@ Route::middleware('auth')->prefix('control')->name('control.')->group(function (
     // POS (Livewire component)
     Route::get('/pos', App\Livewire\Control\Pos\PosPage::class)->name('pos');
     
-    // Activity (will be Livewire component)
-    Route::get('/activity', function () {
-        return view('control.activity');
-    })->name('activity');
+    // Activity (Livewire component)
+    Route::get('/activity', App\Livewire\Control\Activity\ActivityDashboard::class)->name('activity');
     
     // Report
-    Route::get('/report', function () {
-        return view('control.report');
-    })->name('report');
+    Route::get('/report', App\Livewire\Control\Report\ReportDashboard::class)->name('report');
     
     // Inventory (Livewire component)
     Route::get('/inventory', App\Livewire\Control\Inventory\ProductManager::class)->name('inventory');
     
-    // Teams (superadmin only)
-    Route::get('/teams', function () {
-        return view('control.teams');
-    })->name('teams');
-    
+    // Teams (Livewire component)
+    Route::get('/teams', App\Livewire\Control\Teams\TeamManager::class)->name('teams');
+
     // Settings
-    Route::get('/settings', function () {
-        return view('control.settings');
-    })->name('settings');
+    Route::get('/settings', App\Livewire\Control\Settings\SettingsPage::class)->name('settings');
+    
+
 });

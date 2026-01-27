@@ -1,302 +1,213 @@
 <x-frontend.layout title="Beranda">
 
     {{-- Hero Section --}}
-    <section id="beranda" class="relative min-h-screen flex items-center pt-16 lg:pt-0 overflow-hidden">
+    <section id="beranda" class="relative min-h-[90vh] lg:min-h-screen flex items-center pt-24 pb-12 lg:py-0 overflow-hidden">
         {{-- Background --}}
         <div class="absolute inset-0 bg-gradient-to-br from-cream-100 via-cream-50 to-space-50"></div>
         
-        {{-- Decorative Elements --}}
-        <div class="absolute top-20 right-10 w-72 h-72 bg-space-200/30 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-20 left-10 w-96 h-96 bg-golden-200/30 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/4 left-1/4 w-4 h-4 bg-golden-400 rounded-full animate-twinkle"></div>
-        <div class="absolute top-1/3 right-1/3 w-3 h-3 bg-dimsum-pink rounded-full animate-twinkle" style="animation-delay: 0.5s;"></div>
-        <div class="absolute bottom-1/3 right-1/4 w-2 h-2 bg-space-400 rounded-full animate-twinkle" style="animation-delay: 1s;"></div>
+        {{-- Decorative Elements (Reduced for mobile) --}}
+        <div class="absolute top-20 right-10 w-48 h-48 lg:w-72 lg:h-72 bg-space-200/30 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 left-10 w-64 h-64 lg:w-96 lg:h-96 bg-golden-200/30 rounded-full blur-3xl"></div>
         
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-0">
-            <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 w-full">
+            <div class="grid lg:grid-cols-2 gap-8 lg:gap-20 items-center">
                 {{-- Content --}}
-                <div class="text-center lg:text-left order-2 lg:order-1">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-space-100 rounded-full mb-6">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        <span class="text-space-700 text-sm font-medium">Available on GoFood <i class="fas fa-motorcycle text-green-500"></i></span>
+                <div class="text-center lg:text-left order-2 lg:order-1 relative z-10">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 lg:px-4 lg:py-2 bg-space-100 rounded-full mb-6">
+                        <span class="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-space-700 text-xs lg:text-sm font-medium">Available on GoFood <i class="fas fa-motorcycle text-green-500 ml-1"></i></span>
                     </div>
                     
-                    <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-space-950 leading-tight mb-6">
+                    <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-space-950 leading-tight mb-4 lg:mb-6">
                         Dimsum
                         <span class="block gradient-text">Homemade</span>
-                        <span class="block text-3xl sm:text-4xl lg:text-5xl mt-2 font-normal text-space-600">Satu Semesta Seribu Rasa</span>
+                        <span class="block text-2xl sm:text-4xl lg:text-5xl mt-2 font-normal text-space-600">Satu Semesta Seribu Rasa</span>
                     </h1>
                     
-                    <p class="text-space-600 text-lg lg:text-xl leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
+                    <p class="text-space-600 text-base lg:text-xl leading-relaxed mb-6 lg:mb-8 max-w-lg mx-auto lg:mx-0 px-4 lg:px-0">
                         Nikmati kelezatan dimsum homemade dengan cita rasa autentik. Dibuat fresh setiap hari di Yogyakarta!
                     </p>
                     
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="px-8 py-4 bg-gradient-to-r from-space-800 to-space-700 text-white font-semibold rounded-full hover:from-space-700 hover:to-space-600 hover:shadow-xl hover:shadow-space-800/30 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
+                    <div class="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center lg:justify-start px-4 lg:px-0">
+                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="px-6 py-3 lg:px-8 lg:py-4 bg-gradient-to-r from-space-800 to-space-700 text-white font-semibold rounded-full hover:from-space-700 hover:to-space-600 hover:shadow-xl hover:shadow-space-800/30 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 text-sm lg:text-base">
                             <i class="fas fa-motorcycle"></i>
-                            Order via GoFood
+                            Order GoFood
                         </a>
-                        <a href="#menu" class="px-8 py-4 bg-white text-space-800 font-semibold rounded-full border-2 border-space-200 hover:border-space-400 hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2">
+                        <a href="#menu" class="px-6 py-3 lg:px-8 lg:py-4 bg-white text-space-800 font-semibold rounded-full border-2 border-space-200 hover:border-space-400 hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm lg:text-base">
                             <i class="fas fa-utensils"></i>
                             Lihat Menu
                         </a>
                     </div>
-                    
-                    {{-- Stats --}}
-                    <div class="flex items-center justify-center lg:justify-start gap-8 mt-12 pt-8 border-t border-space-200">
-                        <div class="text-center">
-                            <div class="font-display text-3xl font-bold text-space-800">500+</div>
-                            <div class="text-space-500 text-sm">Followers</div>
-                        </div>
-                        <div class="w-px h-12 bg-space-200"></div>
-                        <div class="text-center">
-                            <a href="https://www.instagram.com/setaraspace.id" target="_blank" class="flex items-center gap-1 text-dimsum-pink hover:text-dimsum-orange">
-                                <i class="fab fa-instagram text-2xl"></i>
-                            </a>
-                            <div class="text-space-500 text-sm">@setaraspace.id</div>
-                        </div>
-                        <div class="w-px h-12 bg-space-200"></div>
-                        <div class="text-center">
-                            <a href="https://maps.app.goo.gl/6wqNCWCKVqgNFNKJ8" target="_blank" class="text-space-600 hover:text-space-800">
-                                <i class="fas fa-map-marker-alt text-2xl"></i>
-                            </a>
-                            <div class="text-space-500 text-sm">Yogyakarta</div>
-                        </div>
-                    </div>
                 </div>
                 
                 {{-- Image --}}
-                <div class="order-1 lg:order-2 relative">
-                    <div class="relative">
-                        {{-- Main Image Container --}}
-                        <div class="relative w-72 h-72 sm:w-96 sm:h-96 lg:w-[500px] lg:h-[500px] mx-auto">
-                            {{-- Decorative Circle --}}
-                            <div class="absolute inset-0 bg-gradient-to-br from-space-300 to-space-500 rounded-full animate-float"></div>
-                            
-                            {{-- Dimsum Image --}}
-                            <div class="absolute inset-4 rounded-full overflow-hidden shadow-inner">
-                                <img src="{{ asset('storage/logo.jpeg') }}" alt="Setara Space" class="w-full h-full object-cover">
-                            </div>
-                            
-                            {{-- Steam Animation --}}
-                            <div class="absolute top-8 left-1/2 -translate-x-1/2">
-                                <div class="w-2 h-8 bg-white/60 rounded-full animate-steam"></div>
-                                <div class="w-2 h-8 bg-white/60 rounded-full animate-steam absolute left-4" style="animation-delay: 0.5s;"></div>
-                                <div class="w-2 h-8 bg-white/60 rounded-full animate-steam absolute -left-4" style="animation-delay: 1s;"></div>
-                            </div>
-                            
-                            {{-- Floating Badge 1 --}}
-                            <div class="absolute -left-4 top-1/4 bg-white rounded-2xl p-4 shadow-xl shadow-space-200/50 animate-float" style="animation-delay: 1s;">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 bg-golden-100 rounded-xl flex items-center justify-center">
-                                        <i class="fas fa-fire text-golden-600 text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-space-800">Fresh</div>
-                                        <div class="text-space-500 text-xs">Made Daily</div>
-                                    </div>
+                <div class="order-1 lg:order-2 relative flex justify-center lg:block">
+                    <div class="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[500px] lg:h-[500px]">
+                        {{-- Decorative Circle --}}
+                        <div class="absolute inset-0 bg-gradient-to-br from-space-300 to-space-500 rounded-full animate-float"></div>
+                        
+                        {{-- Dimsum Image --}}
+                        <div class="absolute inset-2 lg:inset-4 rounded-full overflow-hidden shadow-2xl shadow-space-900/20 border-4 border-white">
+                            <img src="{{ asset('storage/logo.jpeg') }}" alt="Setara Space" class="w-full h-full object-cover">
+                        </div>
+                        
+                        {{-- Floating Badge 1 (Mobile Optimized) --}}
+                        <div class="absolute -left-2 top-1/4 bg-white rounded-xl lg:rounded-2xl p-3 lg:p-4 shadow-lg shadow-space-200/50 animate-float z-20" style="animation-delay: 1s;">
+                            <div class="flex items-center gap-2 lg:gap-3">
+                                <div class="w-8 h-8 lg:w-12 lg:h-12 bg-golden-100 rounded-lg lg:rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-fire text-golden-600 text-sm lg:text-xl"></i>
                                 </div>
-                            </div>
-                            
-                            {{-- Floating Badge 2 --}}
-                            <div class="absolute -right-4 bottom-1/4 bg-white rounded-2xl p-4 shadow-xl shadow-space-200/50 animate-float" style="animation-delay: 2s;">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 bg-dimsum-pink/20 rounded-xl flex items-center justify-center">
-                                        <i class="fas fa-heart text-dimsum-pink text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-space-800">Homemade</div>
-                                        <div class="text-space-500 text-xs">With Love</div>
-                                    </div>
+                                <div>
+                                    <div class="font-semibold text-space-800 text-xs lg:text-base">Fresh</div>
+                                    <div class="text-space-500 text-[10px] lg:text-xs">Daily</div>
                                 </div>
-                            </div>
-
-                            {{-- Planet Decoration --}}
-                            <div class="absolute -top-4 right-1/4 w-8 h-8 bg-golden-400 rounded-full shadow-lg animate-orbit">
-                                <div class="absolute inset-0 bg-gradient-to-br from-golden-300 to-golden-500 rounded-full"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        {{-- Scroll Indicator --}}
-        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 text-space-400">
-            <span class="text-sm">Scroll</span>
-            <div class="w-6 h-10 border-2 border-space-300 rounded-full flex justify-center pt-2">
-                <div class="w-1.5 h-3 bg-space-400 rounded-full animate-bounce"></div>
             </div>
         </div>
     </section>
 
     {{-- Featured Menu Section --}}
-    <section id="menu" class="py-20 lg:py-32 bg-white relative overflow-hidden">
+    <section id="menu" class="py-12 lg:py-32 bg-white relative overflow-hidden">
         {{-- Decorative --}}
         <div class="absolute top-0 right-0 w-64 h-64 bg-space-100/50 rounded-full -mr-32 -mt-32"></div>
-        <div class="absolute bottom-0 left-0 w-48 h-48 bg-golden-100/50 rounded-full -ml-24 -mb-24"></div>
         
         <div class="max-w-7xl mx-auto px-4 sm:px-6 relative">
             {{-- Header --}}
-            <div class="text-center max-w-2xl mx-auto mb-16">
-                <span class="inline-block px-4 py-2 bg-space-100 text-space-600 text-sm font-medium rounded-full mb-4">Menu Andalan</span>
-                <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-space-900 mb-6">
-                    Dimsum <span class="gradient-text">Favorit</span> Kami
+            <div class="text-center max-w-2xl mx-auto mb-10 lg:mb-16">
+                <span class="inline-block px-3 py-1 bg-space-100 text-space-600 text-xs lg:text-sm font-medium rounded-full mb-3 lg:mb-4">Menu Terlaris</span>
+                <h2 class="font-display text-2xl sm:text-3xl lg:text-5xl font-bold text-space-900 mb-4 lg:mb-6">
+                    Signature <span class="gradient-text">Dimsum</span>
                 </h2>
-                <p class="text-space-600 text-lg">
-                    Pilihan dimsum homemade dengan kualitas premium dan rasa yang bikin ketagihan!
+                <p class="text-space-600 text-sm lg:text-lg px-4">
+                    Menu favorit yang paling banyak dicari dan dinikmati pelanggan setia kami.
                 </p>
             </div>
             
-            {{-- Dimsum Signature --}}
+            {{-- Dimsum Signature - Horizontal Scroll on Mobile --}}
             <div class="mb-12">
-                <h3 class="font-display text-2xl font-bold text-space-800 mb-8 flex items-center gap-3">
-                    <i class="fas fa-star text-golden-500"></i>
-                    Signature Dimsum
-                </h3>
-                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-                    {{-- Dimsum Ayam Original --}}
-                    <div class="group bg-cream-50 rounded-3xl p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-2">
-                        <div class="relative">
-                            <div class="w-full aspect-square bg-gradient-to-br from-golden-100 to-golden-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                                <i class="fas fa-drumstick-bite text-golden-600 text-5xl"></i>
+                <div class="flex items-center justify-between mb-4 lg:mb-8 px-2 lg:px-0">
+                    <h3 class="font-display text-lg lg:text-2xl font-bold text-space-800 flex items-center gap-2 lg:gap-3">
+                        <i class="fas fa-star text-golden-500"></i>
+                        Signature Dimsum
+                    </h3>
+                </div>
+                
+                {{-- Grid Container --}}
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-8">
+                    @php
+                        $colorMap = [
+                            'golden' => ['bg' => 'from-golden-100 to-golden-200', 'icon' => 'text-golden-600'],
+                            'amber' => ['bg' => 'from-amber-100 to-amber-200', 'icon' => 'text-amber-600'],
+                            'red' => ['bg' => 'from-red-100 to-red-200', 'icon' => 'text-red-600'],
+                            'orange' => ['bg' => 'from-orange-100 to-orange-200', 'icon' => 'text-orange-600'],
+                            'space' => ['bg' => 'from-space-100 to-space-200', 'icon' => 'text-space-600'],
+                            'yellow' => ['bg' => 'from-yellow-100 to-yellow-200', 'icon' => 'text-yellow-700'],
+                            'blue' => ['bg' => 'from-blue-100 to-blue-200', 'icon' => 'text-blue-600'],
+                        ];
+                    @endphp
+                    @foreach($favorites as $product)
+                        @php
+                            $colors = $colorMap[$product->category->color] ?? $colorMap['golden'];
+                        @endphp
+                        {{-- Compact Card Style --}}
+                        <div class="group bg-cream-50 rounded-2xl lg:rounded-3xl p-3 lg:p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-1 lg:hover:-translate-y-2 border border-transparent hover:border-space-200">
+                            <div class="relative">
+                                <div class="w-full aspect-square bg-gradient-to-br {{ $colors['bg'] }} rounded-xl lg:rounded-2xl mb-3 lg:mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                                    @if($product->image)
+                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        <i class="{{ $product->category->icon ?? 'fas fa-bowl-food' }} {{ $colors['icon'] }} text-3xl lg:text-5xl"></i>
+                                    @endif
+                                </div>
+                                @if($loop->iteration === 1)
+                                    <span class="absolute top-2 right-2 lg:top-3 lg:right-3 px-1.5 py-0.5 lg:px-3 lg:py-1 bg-dimsum-pink text-white text-[8px] lg:text-xs font-semibold rounded-full shadow-lg">Best Seller</span>
+                                @elseif($loop->iteration === 2)
+                                    <span class="absolute top-2 right-2 lg:top-3 lg:right-3 px-1.5 py-0.5 lg:px-3 lg:py-1 bg-golden-500 text-white text-[8px] lg:text-xs font-semibold rounded-full shadow-lg">Popular</span>
+                                @elseif($loop->iteration === 4)
+                                    <span class="absolute top-2 right-2 lg:top-3 lg:right-3 px-1.5 py-0.5 lg:px-3 lg:py-1 bg-space-800 text-white text-[8px] lg:text-xs font-semibold rounded-full shadow-lg">New!</span>
+                                @endif
                             </div>
-                            <span class="absolute top-3 right-3 px-3 py-1 bg-dimsum-pink text-white text-xs font-semibold rounded-full">Best Seller</span>
-                        </div>
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-display text-xl font-semibold text-space-900">Dimsum Ayam Original</h3>
-                        </div>
-                        <p class="text-space-500 text-sm mb-4">Dimsum ayam dengan kulit tipis lembut, isian daging ayam juicy.</p>
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-3 bg-space-100 text-space-700 font-medium rounded-xl hover:bg-space-800 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-motorcycle"></i> Order
-                        </a>
-                    </div>
-                    
-                    {{-- Dimsum Keju Goreng --}}
-                    <div class="group bg-cream-50 rounded-3xl p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-2">
-                        <div class="relative">
-                            <div class="w-full aspect-square bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                                <i class="fas fa-cheese text-amber-600 text-5xl"></i>
+                            <div class="mb-2">
+                                <h3 class="font-display text-sm lg:text-xl font-semibold text-space-900 line-clamp-1 leading-tight">{{ $product->name }}</h3>
+                                <p class="text-[10px] lg:text-xs font-medium text-space-400">{{ $product->category->name }}</p>
                             </div>
-                            <span class="absolute top-3 right-3 px-3 py-1 bg-golden-500 text-white text-xs font-semibold rounded-full">Popular</span>
-                        </div>
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-display text-xl font-semibold text-space-900">Dimsum Keju Goreng</h3>
-                        </div>
-                        <p class="text-space-500 text-sm mb-4">Dimsum crispy dengan lelehan keju yang bikin nagih!</p>
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-3 bg-space-100 text-space-700 font-medium rounded-xl hover:bg-space-800 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-motorcycle"></i> Order
-                        </a>
-                    </div>
-                    
-                    {{-- Dimsum Pedas --}}
-                    <div class="group bg-cream-50 rounded-3xl p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-2">
-                        <div class="w-full aspect-square bg-gradient-to-br from-red-100 to-red-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                            <i class="fas fa-pepper-hot text-red-600 text-5xl"></i>
-                        </div>
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-display text-xl font-semibold text-space-900">Dimsum Pedas</h3>
-                        </div>
-                        <p class="text-space-500 text-sm mb-4">Pedasnya nendang! Cocok buat kamu pencinta makanan pedas.</p>
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-3 bg-space-100 text-space-700 font-medium rounded-xl hover:bg-space-800 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-motorcycle"></i> Order
-                        </a>
-                    </div>
-                    
-                    {{-- Dimsum Mentai --}}
-                    <div class="group bg-cream-50 rounded-3xl p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-2">
-                        <div class="relative">
-                            <div class="w-full aspect-square bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                                <i class="fas fa-fire-flame-curved text-orange-600 text-5xl"></i>
+                            <p class="text-space-500 text-[10px] lg:text-sm mb-2 lg:mb-4 line-clamp-2 h-7 lg:h-10 leading-snug">{{ $product->description }}</p>
+                            <div class="flex items-center justify-between mt-auto">
+                                <p class="text-sm lg:text-lg font-bold text-space-700">{{ $product->formatted_price }}</p>
+                                <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-8 h-8 lg:w-auto lg:h-auto lg:px-4 lg:py-2 bg-space-100 text-space-700 hover:bg-space-800 hover:text-white rounded-lg lg:rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                                    <i class="fas fa-plus text-xs lg:hidden"></i>
+                                    <span class="hidden lg:inline font-medium text-sm">Order</span>
+                                </a>
                             </div>
-                            <span class="absolute top-3 right-3 px-3 py-1 bg-space-800 text-white text-xs font-semibold rounded-full">New!</span>
                         </div>
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-display text-xl font-semibold text-space-900">Dimsum Mentai</h3>
-                        </div>
-                        <p class="text-space-500 text-sm mb-4">Saus mentai creamy yang meleleh, rasanya bikin ketagihan!</p>
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-3 bg-space-100 text-space-700 font-medium rounded-xl hover:bg-space-800 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-motorcycle"></i> Order
-                        </a>
-                    </div>
+                    @endforeach
                 </div>
             </div>
 
             {{-- Other Menu --}}
-            <div class="mb-12">
-                <h3 class="font-display text-2xl font-bold text-space-800 mb-8 flex items-center gap-3">
-                    <i class="fas fa-utensils text-space-500"></i>
-                    Menu Lainnya
-                </h3>
-                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-                    {{-- Wonton Frozen --}}
-                    <div class="group bg-cream-50 rounded-3xl p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-2">
-                        <div class="w-full aspect-square bg-gradient-to-br from-space-100 to-space-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                            <i class="fas fa-snowflake text-space-600 text-5xl"></i>
-                        </div>
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-display text-xl font-semibold text-space-900">Wonton Frozen</h3>
-                        </div>
-                        <p class="text-space-500 text-sm mb-4">Wonton siap masak untuk stok di rumah. Praktis!</p>
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-3 bg-space-100 text-space-700 font-medium rounded-xl hover:bg-space-800 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-motorcycle"></i> Order
-                        </a>
-                    </div>
-                    
-                    {{-- Mie Dimsum --}}
-                    <div class="group bg-cream-50 rounded-3xl p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-2">
-                        <div class="w-full aspect-square bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                            <i class="fas fa-bowl-rice text-yellow-700 text-5xl"></i>
-                        </div>
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-display text-xl font-semibold text-space-900">Mie Dimsum</h3>
-                        </div>
-                        <p class="text-space-500 text-sm mb-4">Mie kuah dengan topping dimsum dan chili oil.</p>
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-3 bg-space-100 text-space-700 font-medium rounded-xl hover:bg-space-800 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-motorcycle"></i> Order
-                        </a>
-                    </div>
-
-                    {{-- Lumpia --}}
-                    <div class="group bg-cream-50 rounded-3xl p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-2">
-                        <div class="w-full aspect-square bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                            <i class="fas fa-hotdog text-amber-700 text-5xl"></i>
-                        </div>
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-display text-xl font-semibold text-space-900">Lumpia Goreng</h3>
-                        </div>
-                        <p class="text-space-500 text-sm mb-4">Lumpia crispy dengan isian sayur dan daging.</p>
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-3 bg-space-100 text-space-700 font-medium rounded-xl hover:bg-space-800 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-motorcycle"></i> Order
-                        </a>
-                    </div>
-
-                    {{-- Paket Komplit --}}
-                    <div class="group bg-gradient-to-br from-space-50 to-golden-50 rounded-3xl p-6 border-2 border-space-200 hover:border-space-400 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-2">
-                        <div class="relative">
-                            <div class="w-full aspect-square bg-gradient-to-br from-space-200 to-space-300 rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                                <i class="fas fa-box-open text-space-600 text-5xl"></i>
+            <div class="mb-12" x-data="{ showAll: false }">
+                <div class="flex items-center justify-between mb-4 lg:mb-8 px-2 lg:px-0">
+                    <h3 class="font-display text-lg lg:text-2xl font-bold text-space-800 flex items-center gap-2 lg:gap-3">
+                        <i class="fas fa-utensils text-space-500"></i>
+                        Menu Lainnya
+                    </h3>
+                </div>
+                
+                {{-- Responsive Grid --}}
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-8">
+                    @foreach($others as $product)
+                        @php
+                            $colors = $colorMap[$product->category->color] ?? $colorMap['space'];
+                        @endphp
+                        <div x-show="showAll || {{ $loop->index }} < 6" class="group {{ $product->category->name === 'Paket' ? 'bg-gradient-to-br from-space-50 to-golden-50 border border-space-200' : 'bg-cream-50' }} rounded-2xl lg:rounded-3xl p-3 lg:p-6 hover:shadow-xl hover:shadow-space-200/50 transition-all duration-500 hover:-translate-y-1 lg:hover:-translate-y-2">
+                            <div class="relative">
+                                <div class="w-full aspect-square bg-gradient-to-br {{ $colors['bg'] }} rounded-xl lg:rounded-2xl mb-3 lg:mb-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                                    @if($product->image)
+                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        <i class="{{ $product->category->icon ?? 'fas fa-utensils' }} {{ $colors['icon'] }} text-3xl lg:text-5xl"></i>
+                                    @endif
+                                </div>
+                                @if($product->category->name === 'Paket')
+                                    <span class="absolute top-2 right-2 lg:top-3 lg:right-3 px-1.5 py-0.5 lg:px-3 lg:py-1 bg-gradient-to-r from-dimsum-pink to-golden-500 text-white text-[8px] lg:text-xs font-semibold rounded-full shadow-sm">HEMAT</span>
+                                @endif
                             </div>
-                            <span class="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-dimsum-pink to-golden-500 text-white text-xs font-semibold rounded-full">HEMAT!</span>
+                            
+                            <div class="mb-2">
+                                <h3 class="font-display text-sm lg:text-xl font-semibold text-space-900 line-clamp-1 leading-tight">{{ $product->name }}</h3>
+                            </div>
+                            
+                            <p class="text-space-500 text-[10px] lg:text-sm mb-2 lg:mb-4 line-clamp-2 h-8 lg:h-10 leading-snug">{{ $product->description }}</p>
+                            
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between lg:gap-4 mt-auto">
+                                <p class="text-sm lg:text-lg font-bold text-space-700 mb-2 lg:mb-0">{{ $product->formatted_price }}</p>
+                                <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-2 bg-white border border-space-200 text-space-700 hover:bg-space-800 hover:text-white hover:border-space-800 text-xs lg:text-sm font-medium rounded-lg lg:rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 shadow-sm">
+                                    <i class="fas fa-plus"></i> Add
+                                </a>
+                            </div>
                         </div>
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-display text-xl font-semibold text-space-900">Paket Komplit</h3>
-                        </div>
-                        <p class="text-space-500 text-sm mb-4">Paket lengkap berbagai varian dimsum favorit!</p>
-                        <a href="https://gofood.link/a/RGXVKRw" target="_blank" class="w-full py-3 bg-gradient-to-r from-space-800 to-space-700 text-white font-medium rounded-xl hover:from-space-700 hover:to-space-600 transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-motorcycle"></i> Order
-                        </a>
-                    </div>
+                    @endforeach
+                </div>
+                {{-- View All / Load More --}}
+                <div class="text-center mt-8 lg:mt-12" x-show="!showAll && {{ $others->count() }} > 6">
+                    <button @click="showAll = true" class="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-white border border-space-200 text-space-600 font-semibold rounded-full hover:bg-space-50 hover:border-space-300 hover:text-space-800 transition-all duration-300 shadow-sm">
+                        <span>Lihat Menu Lainnya</span>
+                        <i class="fas fa-chevron-down ml-2"></i>
+                    </button>
+                </div>
+                
+                {{-- IG Link (only shown when all items are visible or if list is short) --}}
+                <div class="text-center mt-6 lg:mt-8" x-show="showAll || {{ $others->count() }} <= 6">
+                    <a href="https://www.instagram.com/setaraspace.id" target="_blank" class="inline-flex items-center gap-2 text-sm text-dimsum-pink hover:text-dimsum-orange font-medium transition-colors">
+                        <i class="fab fa-instagram"></i>
+                        Cek update terbaru di Instagram
+                    </a>
                 </div>
             </div>
             
-            {{-- View All --}}
-            <div class="text-center mt-12">
-                <a href="https://www.instagram.com/setaraspace.id" target="_blank" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-dimsum-pink to-golden-500 text-white font-semibold rounded-full hover:from-dimsum-orange hover:to-golden-400 hover:shadow-xl transition-all duration-300">
-                    <i class="fab fa-instagram"></i>
-                    Lihat Menu Lengkap di Instagram
-                </a>
-            </div>
         </div>
     </section>
 

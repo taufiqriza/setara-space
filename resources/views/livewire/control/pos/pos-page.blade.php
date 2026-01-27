@@ -17,24 +17,23 @@
             </div>
         </div>
         
-        {{-- Center: Order Status --}}
-        <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full {{ count($cartItems) > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-400' }}"></span>
-            <span class="text-sm font-medium {{ count($cartItems) > 0 ? 'text-green-600' : 'text-gray-500' }}">
-                {{ count($cartItems) > 0 ? 'Open Order' : 'No Order' }}
-            </span>
-            @if(count($cartItems) > 0)
-                <span class="text-xs text-gray-400">({{ count($cartItems) }} items)</span>
-            @endif
-        </div>
+        {{-- Center: Spacer --}}
+        <div class="flex-1"></div>
         
-        {{-- Right: Time & Refresh --}}
-        <div class="flex items-center gap-2">
-            <div class="hidden sm:flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
+        {{-- Right: Status & Time & Refresh --}}
+        <div class="flex items-center gap-3">
+            {{-- Store Status --}}
+            <button wire:click="openStoreStatusModal" 
+                    class="hidden sm:flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer {{ $storeStatus === 'open' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200' }}">
+                <span class="w-2 h-2 rounded-full {{ $storeStatus === 'open' ? 'bg-green-500 animate-pulse' : 'bg-red-500' }}"></span>
+                <span>{{ $storeStatus === 'open' ? 'Open Order' : 'Close Order' }}</span>
+            </button>
+
+            <div class="hidden sm:flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                 <i class="far fa-clock"></i>
                 <span x-data="{ time: '' }" x-init="setInterval(() => time = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'}), 1000)" x-text="time"></span>
             </div>
-            <button wire:click="$refresh" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-500">
+            <button wire:click="$refresh" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-500 transition-colors">
                 <i class="fas fa-sync-alt"></i>
             </button>
         </div>
@@ -62,22 +61,22 @@
             
             {{-- Category Tabs - Fixed size cards with horizontal scroll --}}
             <div class="px-4 pt-4 pb-2 flex-shrink-0">
-                <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
+                <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
                     {{-- All Menu --}}
                     <button wire:click="selectCategory('all')" 
-                            class="flex flex-col items-center justify-center w-20 h-20 flex-shrink-0 rounded-xl border-2 transition-all {{ !$selectedCategory ? 'bg-space-800 text-white border-space-800 shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-space-300 hover:shadow' }}">
-                        <i class="fas fa-th-large text-lg mb-1"></i>
-                        <span class="text-[10px] font-medium">All</span>
-                        <span class="text-[9px] opacity-70">{{ $products->count() }}</span>
+                            class="flex flex-col items-center justify-center w-28 h-24 flex-shrink-0 rounded-2xl border transition-all duration-300 {{ !$selectedCategory ? 'bg-space-800/90 backdrop-blur-md text-white border-space-600 shadow-lg shadow-space-800/30' : 'bg-white/60 backdrop-blur-md text-gray-600 border-white/60 hover:bg-blue-50/50 hover:shadow-md' }}">
+                        <i class="fas fa-th-large text-2xl mb-2"></i>
+                        <span class="text-xs font-semibold">All Menu</span>
+                        <span class="text-[10px] {{ !$selectedCategory ? 'text-space-200' : 'text-gray-400' }}">{{ $products->count() }} items</span>
                     </button>
                     
                     {{-- Categories --}}
                     @foreach($categories as $category)
                         <button wire:click="selectCategory({{ $category->id }})" 
-                                class="flex flex-col items-center justify-center w-20 h-20 flex-shrink-0 rounded-xl border-2 transition-all {{ $selectedCategory === $category->id ? 'bg-space-800 text-white border-space-800 shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-space-300 hover:shadow' }}">
-                            <i class="{{ $category->icon ?? 'fas fa-bowl-food' }} text-lg mb-1"></i>
-                            <span class="text-[10px] font-medium truncate max-w-[60px]">{{ $category->name }}</span>
-                            <span class="text-[9px] opacity-70">{{ $category->products_count }}</span>
+                                class="flex flex-col items-center justify-center w-28 h-24 flex-shrink-0 rounded-2xl border transition-all duration-300 {{ $selectedCategory === $category->id ? 'bg-space-800/90 backdrop-blur-md text-white border-space-600 shadow-lg shadow-space-800/30' : 'bg-white/60 backdrop-blur-md text-gray-600 border-white/60 hover:bg-blue-50/50 hover:shadow-md' }}">
+                            <i class="{{ $category->icon ?? 'fas fa-bowl-food' }} text-2xl mb-2"></i>
+                            <span class="text-xs font-semibold truncate max-w-[90px]">{{ $category->name }}</span>
+                            <span class="text-[10px] {{ $selectedCategory === $category->id ? 'text-space-200' : 'text-gray-400' }}">{{ $category->products_count }} items</span>
                         </button>
                     @endforeach
                 </div>
@@ -508,6 +507,37 @@
                     
                     <div class="mt-2 text-center">
                         <span class="text-xs text-gray-400">Current Status: {{ ucfirst(str_replace('_', ' ', $selectedOrder->status)) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Store Status Modal --}}
+    @if($showStoreStatusModal)
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-6" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden" wire:click.stop>
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 {{ $storeStatus === 'open' ? 'bg-red-100 text-red-500' : 'bg-green-100 text-green-500' }}">
+                        <i class="fas {{ $storeStatus === 'open' ? 'fa-store-slash' : 'fa-store' }} text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">
+                        {{ $storeStatus === 'open' ? 'Close the Store?' : 'Open the Store?' }}
+                    </h3>
+                    <p class="text-sm text-gray-500 mb-6">
+                        {{ $storeStatus === 'open' 
+                            ? 'This will mark the store as closed. Are you sure?' 
+                            : 'This will mark the store as open. Ready to serve?' }}
+                    </p>
+                    
+                    <div class="flex gap-3">
+                        <button wire:click="closeStoreStatusModal" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors">
+                            Cancel
+                        </button>
+                        <button wire:click="toggleStoreStatus" 
+                                class="flex-1 py-2.5 font-medium rounded-xl text-white shadow-lg transition-all transform hover:scale-105 {{ $storeStatus === 'open' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600' }}">
+                            {{ $storeStatus === 'open' ? 'Close Store' : 'Open Store' }}
+                        </button>
                     </div>
                 </div>
             </div>

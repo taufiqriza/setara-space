@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -88,6 +89,14 @@
         ::-webkit-scrollbar-track { background: #FFF8E7; }
         ::-webkit-scrollbar-thumb { background: #3B4CCA; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #2d2a8c; }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
         
         /* Animations */
         @keyframes float {

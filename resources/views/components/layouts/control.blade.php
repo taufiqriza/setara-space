@@ -60,7 +60,7 @@
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 min-h-screen">
     
-    <div x-data="{ sidebarOpen: false }" class="relative">
+    <div x-data="{ sidebarOpen: false }" @toggle-sidebar.window="sidebarOpen = !sidebarOpen" class="relative">
         
         {{-- Overlay --}}
         <div x-show="sidebarOpen" 
@@ -105,6 +105,11 @@
             
             {{-- Navigation --}}
             <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <a href="{{ route('control.dashboard') }}" wire:navigate 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.dashboard') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fas fa-home w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
                 <a href="{{ route('control.pos') }}" wire:navigate 
                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.pos') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fas fa-cash-register w-5 text-center"></i>
