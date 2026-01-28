@@ -52,6 +52,11 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+    
+    public function merchantOrder(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(MerchantOrder::class);
+    }
 
     public function isPaid(): bool
     {

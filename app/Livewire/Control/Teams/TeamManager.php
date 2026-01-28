@@ -5,6 +5,7 @@ namespace App\Livewire\Control\Teams;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
+use App\Models\WorkShift;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -13,22 +14,34 @@ class TeamManager extends Component
 {
     use WithPagination;
 
+    // Tabs
+    public $activeTab = 'members'; // members, attendance
+
+    // Member Management
     public $search = '';
     public $filterRole = '';
     public $filterStatus = '';
 
-    // Modals
+    // Attendance Management
+    public $attendanceDate = '';
+    public $attendanceUser = '';
+    
+    // Member Modals
     public $showModal = false;
     public $isEditing = false;
     public $userId;
     
-    // Form Fields
+    // Member Form
     public $name;
     public $email;
     public $password;
     public $employment_type = 'fulltime';
     public $role = 'staff-fulltime';
     public $is_active = true;
+
+    // Attendance Detail Modal
+    public $showAttendanceModal = false;
+    public ?WorkShift $selectedShift = null;
 
     protected $rules = [
         'name' => 'required|min:3',
@@ -38,9 +51,37 @@ class TeamManager extends Component
         'role' => 'required|exists:roles,name',
     ];
 
+    public function mount()
+    {
+        $this->attendanceDate = now()->format('Y-m');
+    }
+
+    public function setActiveTab($tab)
+    {
+        $this->activeTab = $tab;
+        $this->resetPage(); // Reset pagination when switching tabs
+    }
+
     public function render()
     {
-        $users = User::query()
+        $roles = Role::all();
+        $staffUsers = User::whereHas('roles', fn($q) => $q->where('name', 'like', 'staff%'))->get();
+
+        $data = match($this->activeTab) {
+            'members' => $this->getMembers(),
+            'attendance' => $this->getAttendanceRecords(),
+        };
+
+        return view('livewire.control.teams.team-manager', [
+            'data' => $data,
+            'roles' => $roles,
+            'staffUsers' => $staffUsers,
+        ])->layout('layouts.control', ['title' => 'Team Management']);
+    }
+
+    protected function getMembers()
+    {
+        return User::query()
             ->with(['roles'])
             ->when($this->search, function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
@@ -56,14 +97,24 @@ class TeamManager extends Component
             })
             ->latest()
             ->paginate(10);
-
-        $roles = Role::all();
-
-        return view('livewire.control.teams.team-manager', [
-            'users' => $users,
-            'roles' => $roles,
-        ])->layout('layouts.control', ['title' => 'Team Management']);
     }
+
+    protected function getAttendanceRecords()
+    {
+        return WorkShift::query()
+            ->with('user')
+            ->when($this->attendanceUser, function($q) {
+                $q->where('user_id', $this->attendanceUser);
+            })
+            ->when($this->attendanceDate, function($q) {
+                // Filter by YYYY-MM
+                $q->where('start_time', 'like', $this->attendanceDate . '%');
+            })
+            ->latest('start_time')
+            ->paginate(10);
+    }
+
+    // --- MEMBER ACTIONS ---
 
     public function openModal()
     {
@@ -84,7 +135,7 @@ class TeamManager extends Component
         $this->userId = $user->id;
         $this->name = $user->name;
         $this->email = $user->email;
-        $this->password = ''; // Don't fill password on edit
+        $this->password = ''; 
         $this->employment_type = $user->employment_type;
         $this->role = $user->roles->first()->name ?? 'staff-fulltime';
         $this->is_active = $user->is_active;
@@ -98,7 +149,7 @@ class TeamManager extends Component
         $rules = $this->rules;
         if ($this->isEditing) {
             $rules['email'] = 'required|email|unique:users,email,' . $this->userId;
-            $rules['password'] = 'nullable|min:6'; // Password optional on update
+            $rules['password'] = 'nullable|min:6'; 
         }
 
         $this->validate($rules);
@@ -159,19 +210,15 @@ class TeamManager extends Component
             'type' => 'warning',
             'title' => 'Are you sure?',
             'text' => 'This action cannot be undone.',
-            'method' => 'deleteUser', // The method to call if confirmed
+            'method' => 'deleteUser', 
             'id' => $id
         ]);
     }
 
-    // Listener for the confirmed action
     protected $listeners = ['deleteUser'];
 
     public function deleteUser($id)
     {
-        // Handle array wrap from event dispatch if necessary, though dispatch usually sends args cleanly
-        // In Livewire 3, if passed as object {id: 1}, it comes as array or object. 
-        // Let's safe cast or check.
         if (is_array($id) && isset($id['id'])) {
             $id = $id['id'];
         }
@@ -188,18 +235,29 @@ class TeamManager extends Component
 
     public function toggleStatus($id)
     {
-        if ($id === Auth::id()) {
-            return; 
-        }
+        if ($id === Auth::id()) return; 
         $user = User::findOrFail($id);
         $user->is_active = !$user->is_active;
         $user->save();
 
         $status = $user->is_active ? 'active' : 'inactive';
-        $this->dispatch('swal:modal', [
+        $this->dispatch('swal:compact', [
             'type' => 'success',
-            'title' => 'Status Updated',
             'text' => "User is now {$status}."
         ]);
+    }
+
+    // --- ATTENDANCE ACTIONS ---
+
+    public function viewAttendance($shiftId)
+    {
+        $this->selectedShift = WorkShift::with('user')->findOrFail($shiftId);
+        $this->showAttendanceModal = true;
+    }
+
+    public function closeAttendanceModal()
+    {
+        $this->showAttendanceModal = false;
+        $this->selectedShift = null;
     }
 }

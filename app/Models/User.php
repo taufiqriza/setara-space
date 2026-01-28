@@ -57,4 +57,19 @@ class User extends Authenticatable
     {
         return $this->hasRole('superadmin');
     }
+    /**
+     * Get user's work shifts
+     */
+    public function workShifts()
+    {
+        return $this->hasMany(WorkShift::class);
+    }
+
+    /**
+     * Get user's currently active shift (if any)
+     */
+    public function activeShift()
+    {
+        return $this->workShifts()->where('status', 'open')->latest()->first();
+    }
 }

@@ -55,7 +55,13 @@ class ProductObserver
                 'description' => "Product '{$product->name}' updated.",
                 'properties' => $changes,
                 'ip_address' => request()->ip(),
+                'ip_address' => request()->ip(),
             ]);
+        }
+
+        // Trigger Sync if Price or Status changes
+        if ($product->wasChanged('price') || $product->wasChanged('is_active')) {
+            \App\Jobs\SyncProductToAggregators::dispatch($product);
         }
     }
 

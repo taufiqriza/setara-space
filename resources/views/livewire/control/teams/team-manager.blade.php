@@ -10,142 +10,273 @@
             </div>
         </div>
         <div>
-           <button wire:click="openModal" class="bg-space-600 hover:bg-space-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md shadow-space-200 transition-all flex items-center gap-2">
-               <i class="fas fa-plus"></i> Add Member
-           </button>
+            @if($activeTab === 'members')
+                <button wire:click="openModal" class="bg-space-600 hover:bg-space-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md shadow-space-200 transition-all flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Add Member
+                </button>
+            @endif
         </div>
     </header>
-
-    {{-- Main Content --}}
-    <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-gray-50">
-        
-        {{-- Filters --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div class="relative w-full md:w-96">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search by name or email..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-space-500 focus:ring-2 focus:ring-space-200 transition-all outline-none">
-            </div>
-            
-            <div class="flex items-center gap-3 w-full md:w-auto overflow-x-auto">
-                <select wire:model.live="filterRole" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:border-space-500 outline-none">
-                    <option value="">All Roles</option>
-                    @foreach($roles as $r)
-                        <option value="{{ $r->name }}">{{ ucfirst(str_replace('-', ' ', $r->name)) }}</option>
-                    @endforeach
-                </select>
-                
-                <select wire:model.live="filterStatus" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:border-space-500 outline-none">
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-            </div>
-        </div>
-
-        {{-- Users Table --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50/50 border-b border-gray-100 text-xs uppercase text-gray-500 font-bold tracking-wider">
-                            <th class="px-6 py-4">Staff Member</th>
-                            <th class="px-6 py-4">Role</th>
-                            <th class="px-6 py-4">Employment</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4">Joined</th>
-                            <th class="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse($users as $user)
-                        <tr class="hover:bg-gray-50/50 transition-colors group">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-space-100 to-space-200 border-2 border-white shadow-sm flex items-center justify-center text-sm font-bold text-space-700">
-                                        {{ substr($user->name, 0, 1) }}
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-gray-900">{{ $user->name }}</p>
-                                        <p class="text-xs text-gray-500">{{ $user->email }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                @php
-                                    $roleName = $user->roles->first()->name ?? 'No Role';
-                                    $roleColor = match($roleName) {
-                                        'superadmin' => 'bg-purple-100 text-purple-700 border-purple-200',
-                                        'staff-fulltime' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                        'staff-parttime' => 'bg-orange-100 text-orange-700 border-orange-200',
-                                        default => 'bg-gray-100 text-gray-700 border-gray-200'
-                                    };
-                                @endphp
-                                <span class="px-2.5 py-1 rounded-md text-xs font-bold border {{ $roleColor }}">
-                                    {{ ucfirst(str_replace('-', ' ', $roleName)) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-sm font-medium text-gray-700 capitalize flex items-center gap-2">
-                                    @if($user->employment_type === 'fulltime')
-                                        <i class="fas fa-briefcase text-gray-400 text-xs"></i>
-                                    @else
-                                        <i class="fas fa-clock text-gray-400 text-xs"></i>
-                                    @endif
-                                    {{ $user->employment_type ?? '-' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <button wire:click="toggleStatus({{ $user->id }})" 
-                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $user->is_active ? 'bg-green-500' : 'bg-gray-200' }}"
-                                    {{ $user->id === auth()->id() ? 'disabled' : '' }}>
-                                    <span class="sr-only">Use setting</span>
-                                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $user->is_active ? 'translate-x-5' : 'translate-x-0' }}"></span>
-                                </button>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-sm text-gray-500">{{ $user->created_at->format('d M Y') }}</span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <button wire:click="editUser({{ $user->id }})" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-blue-600 transition-colors">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    @if($user->id !== auth()->id())
-                                    <button wire:click="confirmDelete({{ $user->id }})" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-600 transition-colors">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                                <div class="flex flex-col items-center gap-2">
-                                    <i class="fas fa-users-slash text-4xl text-gray-300"></i>
-                                    <p>No team members found.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            {{-- Pagination --}}
-            <div class="px-6 py-4 border-t border-gray-100">
-                {{ $users->links() }}
-            </div>
+    
+    {{-- Tab Navigation --}}
+    <div class="px-6 pt-6 pb-2 bg-gray-50 flex-shrink-0">
+        <div class="flex space-x-1 rounded-xl bg-gray-200 p-1 w-fit">
+            <button wire:click="setActiveTab('members')"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all {{ $activeTab === 'members' ? 'bg-white shadow text-space-700' : 'text-gray-500 hover:text-gray-700' }}">
+                <i class="fas fa-users"></i> Members
+            </button>
+            <button wire:click="setActiveTab('attendance')"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all {{ $activeTab === 'attendance' ? 'bg-white shadow text-space-700' : 'text-gray-500 hover:text-gray-700' }}">
+                <i class="fas fa-clock"></i> Attendance
+            </button>
         </div>
     </div>
 
-    {{-- Create/Edit Modal --}}
+    {{-- Main Content --}}
+    <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-gray-50 pt-2">
+        
+        {{-- MEMBERS TAB CONTENT --}}
+        @if($activeTab === 'members')
+            
+            {{-- Filters --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div class="relative w-full md:w-96">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search by name or email..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-space-500 focus:ring-2 focus:ring-space-200 transition-all outline-none">
+                </div>
+                
+                <div class="flex items-center gap-3 w-full md:w-auto overflow-x-auto">
+                    <select wire:model.live="filterRole" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:border-space-500 outline-none">
+                        <option value="">All Roles</option>
+                        @foreach($roles as $r)
+                            <option value="{{ $r->name }}">{{ ucfirst(str_replace('-', ' ', $r->name)) }}</option>
+                        @endforeach
+                    </select>
+                    
+                    <select wire:model.live="filterStatus" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:border-space-500 outline-none">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- Users Table --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50/50 border-b border-gray-100 text-xs uppercase text-gray-500 font-bold tracking-wider">
+                                <th class="px-6 py-4">Staff Member</th>
+                                <th class="px-6 py-4">Role</th>
+                                <th class="px-6 py-4">Employment</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">Joined</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($data as $user)
+                            <tr class="hover:bg-gray-50/50 transition-colors group">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-space-100 to-space-200 border-2 border-white shadow-sm flex items-center justify-center text-sm font-bold text-space-700">
+                                            {{ substr($user->name, 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-gray-900">{{ $user->name }}</p>
+                                            <p class="text-xs text-gray-500">{{ $user->email }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @php
+                                        $roleName = $user->roles->first()->name ?? 'No Role';
+                                        $roleColor = match($roleName) {
+                                            'superadmin' => 'bg-purple-100 text-purple-700 border-purple-200',
+                                            'staff-fulltime' => 'bg-blue-100 text-blue-700 border-blue-200',
+                                            'staff-parttime' => 'bg-orange-100 text-orange-700 border-orange-200',
+                                            default => 'bg-gray-100 text-gray-700 border-gray-200'
+                                        };
+                                    @endphp
+                                    <span class="px-2.5 py-1 rounded-md text-xs font-bold border {{ $roleColor }}">
+                                        {{ ucfirst(str_replace('-', ' ', $roleName)) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-medium text-gray-700 capitalize flex items-center gap-2">
+                                        @if($user->employment_type === 'fulltime')
+                                            <i class="fas fa-briefcase text-gray-400 text-xs"></i>
+                                        @else
+                                            <i class="fas fa-clock text-gray-400 text-xs"></i>
+                                        @endif
+                                        {{ $user->employment_type ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <button wire:click="toggleStatus({{ $user->id }})" 
+                                        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $user->is_active ? 'bg-green-500' : 'bg-gray-200' }}"
+                                        {{ $user->id === auth()->id() ? 'disabled' : '' }}>
+                                        <span class="sr-only">Use setting</span>
+                                        <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $user->is_active ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                                    </button>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-gray-500">{{ $user->created_at->format('d M Y') }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button wire:click="editUser({{ $user->id }})" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-blue-600 transition-colors">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        @if($user->id !== auth()->id())
+                                        <button wire:click="confirmDelete({{ $user->id }})" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-600 transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <i class="fas fa-users-slash text-4xl text-gray-300"></i>
+                                        <p>No team members found.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        {{-- ATTENDANCE TAB CONTENT --}}
+        @elseif($activeTab === 'attendance')
+            
+            {{-- Filters --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="relative">
+                        <i class="fas fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                        <input wire:model.live="attendanceDate" type="month" class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-space-500 outline-none text-sm text-gray-700">
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <select wire:model.live="attendanceUser" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:border-space-500 outline-none">
+                        <option value="">All Staff</option>
+                        @foreach($staffUsers as $staff)
+                            <option value="{{ $staff->id }}">{{ $staff->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            {{-- Attendance Table --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50/50 border-b border-gray-100 text-xs uppercase text-gray-500 font-bold tracking-wider">
+                                <th class="px-6 py-4">Staff</th>
+                                <th class="px-6 py-4">Date</th>
+                                <th class="px-6 py-4">Time In / Out</th>
+                                <th class="px-6 py-4">Duration</th>
+                                <th class="px-6 py-4">Cash Status</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($data as $shift)
+                            @php
+                                $diff = $shift->end_time && $shift->start_time ? $shift->start_time->diff($shift->end_time) : null;
+                                $duration = $diff ? $diff->format('%H:%I') . ' hrs' : '-';
+                                $reconcileStatus = 'pending';
+                                if($shift->status === 'closed') {
+                                    $diffCash = $shift->end_cash_actual - $shift->end_cash_expected;
+                                    if(abs($diffCash) < 1) $reconcileStatus = 'balanced';
+                                    elseif($diffCash > 0) $reconcileStatus = 'surplus';
+                                    else $reconcileStatus = 'deficit';
+                                }
+                            @endphp
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-full bg-space-100 flex items-center justify-center text-xs font-bold text-space-700">
+                                            {{ substr($shift->user->name, 0, 1) }}
+                                        </div>
+                                        <span class="text-sm font-bold text-gray-900">{{ $shift->user->name }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-gray-700">{{ $shift->start_time->format('d M, Y') }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col text-xs">
+                                        <span class="text-green-600 font-medium"><i class="fas fa-sign-in-alt w-4"></i> {{ $shift->start_time->format('H:i') }}</span>
+                                        <span class="{{ $shift->end_time ? 'text-red-500' : 'text-gray-400' }}">
+                                            <i class="fas fa-sign-out-alt w-4"></i> 
+                                            {{ $shift->end_time ? $shift->end_time->format('H:i') : 'Active' }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-mono {{ $shift->status === 'open' ? 'text-green-500 animate-pulse' : 'text-gray-600' }}">
+                                        {{ $shift->status === 'open' ? 'Active now' : $duration }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($shift->status === 'open')
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase">Active</span>
+                                    @else
+                                        @if($reconcileStatus === 'balanced')
+                                            <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase">Balanced</span>
+                                        @elseif($reconcileStatus === 'surplus')
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase">+{{ number_format($shift->end_cash_actual - $shift->end_cash_expected) }}</span>
+                                        @else
+                                            <span class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded uppercase">{{ number_format($shift->end_cash_actual - $shift->end_cash_expected) }}</span>
+                                        @endif
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button wire:click="viewAttendance({{ $shift->id }})" class="text-space-600 hover:text-space-800 text-xs font-bold bg-space-50 hover:bg-space-100 px-3 py-1.5 rounded transition-colors">
+                                        DETAILS
+                                    </button>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <i class="fas fa-clipboard-list text-4xl text-gray-300"></i>
+                                        <p>No attendance records found.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        @endif
+        
+        {{-- Pagination --}}
+        @if($data->hasPages())
+        <div class="px-6 py-4 border-t border-gray-100 bg-white rounded-xl shadow-sm">
+            {{ $data->links() }}
+        </div>
+        @endif
+    </div>
+
+    {{-- MEMBER MODAL --}}
     @if($showModal)
     <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeModal"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
             <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="flex items-center justify-between mb-5">
@@ -169,7 +300,7 @@
                             <input wire:model="email" type="email" class="w-full rounded-lg border-gray-300 focus:border-space-500 focus:ring-space-500 shadow-sm transition-colors" placeholder="email@example.com">
                             @error('email') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
-
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 Password 
@@ -214,6 +345,133 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ATTENDANCE DETAIL MODAL --}}
+    @if($showAttendanceModal && $selectedShift)
+    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" wire:click="closeAttendanceModal"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full">
+                <div class="relative">
+                    {{-- Header --}}
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Shift Detail</h3>
+                            <p class="text-sm text-gray-500">{{ $selectedShift->user->name }} • {{ $selectedShift->start_time->format('d F Y') }}</p>
+                        </div>
+                        <button wire:click="closeAttendanceModal" class="text-gray-400 hover:text-gray-500 bg-white rounded-full p-2 shadow-sm border border-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    {{-- Body --}}
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {{-- START SECTION --}}
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </div>
+                                    <h4 class="font-bold text-gray-900">Clock In</h4>
+                                </div>
+                                
+                                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                    <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                                        <div>
+                                            <span class="block text-gray-400 text-xs uppercase font-bold tracking-wider">Time</span>
+                                            <span class="font-mono font-medium text-gray-900">{{ $selectedShift->start_time->format('H:i') }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-gray-400 text-xs uppercase font-bold tracking-wider">Initial Cash</span>
+                                            <span class="font-mono font-medium text-gray-900">Rp {{ number_format($selectedShift->start_cash) }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="relative rounded-lg overflow-hidden bg-black aspect-video group">
+                                         @if($selectedShift->start_photo)
+                                             <img src="{{ Storage::url($selectedShift->start_photo) }}" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500">
+                                         @else
+                                             <div class="flex items-center justify-center h-full text-gray-500">No Photo</div>
+                                         @endif
+                                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                                             <span class="text-white text-xs font-bold">Entry Verification</span>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- END SECTION --}}
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </div>
+                                    <h4 class="font-bold text-gray-900">Clock Out</h4>
+                                </div>
+                                
+                                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 h-full">
+                                    @if($selectedShift->end_time)
+                                        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                                            <div>
+                                                <span class="block text-gray-400 text-xs uppercase font-bold tracking-wider">Time</span>
+                                                <span class="font-mono font-medium text-gray-900">{{ $selectedShift->end_time->format('H:i') }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="block text-gray-400 text-xs uppercase font-bold tracking-wider">Actual Cash</span>
+                                                <span class="font-mono font-medium text-gray-900">Rp {{ number_format($selectedShift->end_cash_actual) }}</span>
+                                            </div>
+                                        </div>
+
+                                        {{-- Reconciliation Banner --}}
+                                        @php
+                                            $diff = $selectedShift->end_cash_actual - $selectedShift->end_cash_expected;
+                                            $status = abs($diff) < 1 ? 'balanced' : ($diff > 0 ? 'surplus' : 'deficit');
+                                            $color = $status == 'balanced' ? 'green' : ($status == 'surplus' ? 'blue' : 'red');
+                                        @endphp
+                                        <div class="mb-4 bg-{{ $color }}-50 border border-{{ $color }}-100 p-3 rounded-lg flex justify-between items-center">
+                                            <span class="text-xs font-bold text-{{ $color }}-700 uppercase">{{ ucfirst($status) }}</span>
+                                            <span class="font-mono font-bold text-{{ $color }}-700">
+                                                {{ $diff > 0 ? '+' : '' }}{{ number_format($diff) }}
+                                            </span>
+                                        </div>
+
+                                        <div class="relative rounded-lg overflow-hidden bg-black aspect-video group">
+                                            @if($selectedShift->end_photo)
+                                                <img src="{{ Storage::url($selectedShift->end_photo) }}" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500">
+                                            @else
+                                                <div class="flex items-center justify-center h-full text-gray-500">No Photo</div>
+                                            @endif
+                                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                                                <span class="text-white text-xs font-bold">Exit Summary</span>
+                                            </div>
+                                        </div>
+
+                                        @if($selectedShift->note)
+                                            <div class="mt-4 p-3 bg-white rounded border border-gray-200">
+                                                <span class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Shift Notes</span>
+                                                <p class="text-sm text-gray-600 italic">"{{ $selectedShift->note }}"</p>
+                                            </div>
+                                        @endif
+
+                                    @else
+                                        <div class="h-full flex flex-col items-center justify-center text-center p-8 opacity-50">
+                                            <i class="fas fa-clock text-4xl text-gray-300 mb-2"></i>
+                                            <p class="font-bold text-gray-900">Shift Currently Active</p>
+                                            <p class="text-sm text-gray-500">User has not clocked out yet.</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

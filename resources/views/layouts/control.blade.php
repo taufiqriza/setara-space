@@ -327,6 +327,12 @@
                 <i class="fas fa-users w-5 text-center"></i>
                 <span>Teams</span>
             </a>
+            <a href="{{ route('control.integrations') }}" wire:navigate 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.integrations') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}"
+               @click="sidebarOpen = false">
+                <i class="fas fa-plug w-5 text-center"></i>
+                <span>Integrations</span>
+            </a>
             <a href="{{ route('control.settings') }}" wire:navigate 
                class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.settings') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}"
                @click="sidebarOpen = false">

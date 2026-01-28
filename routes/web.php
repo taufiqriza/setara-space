@@ -72,6 +72,9 @@ Route::middleware('auth')->prefix('control')->name('control.')->group(function (
 
     // Settings
     Route::get('/settings', App\Livewire\Control\Settings\SettingsPage::class)->name('settings');
+
+    // Integrations
+    Route::get('/integrations', App\Livewire\Control\Integrations\IntegrationList::class)->name('integrations');
     
 
 });

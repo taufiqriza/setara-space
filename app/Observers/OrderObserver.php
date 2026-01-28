@@ -26,6 +26,21 @@ class OrderObserver
                 ],
                 'ip_address' => request()->ip(),
             ]);
+
+            // Sync to Merchant Integration (GoFood/Grab)
+            // processing -> accept
+            // completed -> ready
+            // cancelled -> reject
+            
+            $actionMap = [
+                'processing' => 'accept',
+                'completed' => 'ready',
+                'cancelled' => 'reject'
+            ];
+
+            if (isset($actionMap[$order->status])) {
+                \App\Jobs\UpdateMerchantOrderStatus::dispatch($order, $actionMap[$order->status]);
+            }
         }
         
         if ($order->wasChanged('payment_status') && $order->payment_status === 'paid') {

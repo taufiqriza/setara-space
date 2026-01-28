@@ -7,7 +7,10 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\Table;
+use App\Models\WorkShift;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PosPage extends Component
 {
@@ -38,6 +41,7 @@ class PosPage extends Component
     
     // Order tracking
     public string $orderStatus = 'open'; // open/closed
+    public string $activeOrderFilter = 'all'; // all, dine_in, online
 
     // Receipt Modal
     public bool $showReceiptModal = false;
@@ -50,6 +54,15 @@ class PosPage extends Component
     // Store Status
     public string $storeStatus = 'open'; // open, closed
     public bool $showStoreStatusModal = false;
+
+    // Shift & Attendance System
+    public bool $showAttendanceModal = false;
+    public string $attendanceType = 'start'; // start, end
+    public $tempPhoto = null; // Base64 photo from webcam
+    public $shiftAmount = ''; // Start cash or actual closing cash
+    public string $shiftNotes = '';
+    public array $shiftData = []; // To store active shift info
+    public float $expectedCash = 0;
 
     protected $listeners = ['refreshPos' => '$refresh'];
 
@@ -73,6 +86,134 @@ class PosPage extends Component
     public function mount()
     {
         $this->taxRate = 10; // Default 10%
+        $this->checkActiveShift();
+    }
+
+    public function checkActiveShift()
+    {
+        $activeShift = auth()->user()->activeShift();
+        
+        if (!$activeShift) {
+            // No active shift, force open modal
+            $this->attendanceType = 'start';
+            $this->shiftAmount = ''; // Reset
+            $this->attendanceType = 'start';
+            $this->shiftAmount = ''; // Reset
+            $this->tempPhoto = null;
+            $this->shiftData = [];
+            $this->dispatch('open-attendance-modal'); // Dispatch event instead of property sync
+        } else {
+            $this->showAttendanceModal = false; // Internal state update only
+            $this->shiftData = $activeShift->toArray();
+        }
+    }
+
+    public function startRegisterShift()
+    {
+        $this->validate([
+            'shiftAmount' => 'required|numeric|min:0',
+            'tempPhoto' => 'required|string',
+        ]);
+
+        // Process Photo
+        $photoPath = $this->storeBase64Photo($this->tempPhoto, 'shifts/start');
+
+        // Create Shift Record
+        $shift = WorkShift::create([
+            'user_id' => auth()->id(),
+            'start_time' => now(),
+            'start_cash' => $this->shiftAmount,
+            'start_photo' => $photoPath,
+            'status' => 'open',
+        ]);
+
+        $this->activeOrderFilter = 'all'; // Reset filter
+        $this->checkActiveShift(); // Reload state
+        
+        $this->dispatch('close-attendance-modal'); // Force close on frontend
+
+        $this->dispatch('swal:compact', [
+            'type' => 'success',
+            'text' => 'Shift Started! Good luck.'
+        ]);
+    }
+
+    public function initiateCloseRegister()
+    {
+        $activeShift = auth()->user()->activeShift();
+        if (!$activeShift) return;
+
+        // Calculate Expected Cash: Start Cash + Total Cash Sales during this shift
+        // Logic: Get orders where payment_method='cash' AND created_at >= shift start
+        $cashSales = Order::where('user_id', auth()->id())
+            ->where('created_at', '>=', $activeShift->start_time)
+            ->where('payment_status', 'paid')
+            ->where('payment_method', 'cash')
+            ->sum('total');
+            
+        $this->expectedCash = $activeShift->start_cash + $cashSales;
+        
+        $this->attendanceType = 'end';
+        $this->shiftAmount = ''; // User must input actual cash
+        $this->shiftNotes = '';
+        $this->tempPhoto = null;
+        $this->dispatch('open-attendance-modal');
+    }
+
+    public function closeRegisterShift()
+    {
+        $this->validate([
+            'shiftAmount' => 'required|numeric|min:0',
+            'tempPhoto' => 'required|string',
+        ]);
+
+        $activeShift = auth()->user()->activeShift();
+        if (!$activeShift) return;
+
+        // Process Photo
+        $photoPath = $this->storeBase64Photo($this->tempPhoto, 'shifts/end');
+
+        // Update Shift Record
+        $activeShift->update([
+            'end_time' => now(),
+            'end_cash_expected' => $this->expectedCash,
+            'end_cash_actual' => $this->shiftAmount,
+            'end_photo' => $photoPath,
+            'end_photo' => $photoPath,
+            'status' => 'closed',
+            'note' => $this->shiftNotes,
+        ]);
+
+        $this->showAttendanceModal = false;
+        $this->dispatch('close-attendance-modal'); // Force close on frontend
+        
+        // Redirect or generic message
+        session()->flash('success', 'Shift Closed. See you tomorrow!');
+        return redirect()->route('control.dashboard'); 
+    }
+
+    private function storeBase64Photo($base64String, $folder)
+    {
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64String, $type)) {
+            $data = substr($base64String, strpos($base64String, ',') + 1);
+            $type = strtolower($type[1]); // jpg, png, etc
+            
+            if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                throw new \Exception('Invalid image type');
+            }
+            
+            $data = base64_decode($data);
+            if ($data === false) {
+                throw new \Exception('Base64 decode failed');
+            }
+            
+            $filename = $folder . '/' . Str::random(40) . '.' . $type;
+            Storage::disk('public')->put($filename, $data);
+            
+            return $filename;
+        }
+        
+        throw new \Exception('Did not match data URI with image data');
     }
     
     public function getNextOrderNumber()
@@ -137,12 +278,29 @@ class PosPage extends Component
             
         $tables = Table::where('is_active', true)->get();
         
-        $recentOrders = Order::with(['user', 'table'])
-            ->whereIn('status', ['pending', 'on_kitchen', 'to_be_served'])
+        
+        // Active Order Filter Logic
+        $recentOrders = Order::with(['user', 'table', 'merchantOrder.integration', 'merchantOrder.credential'])
+            ->whereIn('status', ['pending', 'on_kitchen', 'to_be_served', 'processing', 'completed'])
             ->whereDate('created_at', today())
+            // Apply Filter
+            ->when($this->activeOrderFilter === 'dine_in', function($q) {
+                // Assuming online orders have specific payment methods. 
+                // Alternatively, check if merchantOrder exists.
+                $q->whereNotIn('payment_method', ['gofood', 'grabfood', 'shopeefood']);
+            })
+            ->when($this->activeOrderFilter === 'online', function($q) {
+                $q->whereIn('payment_method', ['gofood', 'grabfood', 'shopeefood']);
+            })
             ->latest()
-            ->take(10)
+            ->take(20)
             ->get();
+            
+        // Count Active Online Orders for Badge
+        $onlineOrdersCount = Order::whereIn('payment_method', ['gofood', 'grabfood', 'shopeefood'])
+            ->whereIn('status', ['pending', 'on_kitchen', 'processing', 'to_be_served', 'ready'])
+            ->whereDate('created_at', today())
+            ->count();
 
         return view('livewire.control.pos.pos-page', [
             'categories' => $categories,
@@ -150,6 +308,7 @@ class PosPage extends Component
             'tables' => $tables,
             'recentOrders' => $recentOrders,
             'currentOrderNumber' => $this->currentOrderNumber,
+            'onlineOrdersCount' => $onlineOrdersCount,
         ])->layout('layouts.control', ['title' => 'Point of Sales']);
     }
 
@@ -466,7 +625,7 @@ class PosPage extends Component
     // Order Viewing (Bottom Bar)
     public function viewOrder($orderId)
     {
-        $this->selectedOrder = Order::with(['items', 'table', 'user'])->find($orderId);
+        $this->selectedOrder = Order::with(['items', 'table', 'user', 'merchantOrder.integration'])->find($orderId);
         if ($this->selectedOrder) {
             $this->showOrderDetailModal = true;
         }
@@ -503,5 +662,10 @@ class PosPage extends Component
             'type' => 'info',
             'text' => 'Cart cleared'
         ]);
+    }
+
+    public function setActiveOrderFilter($filter)
+    {
+        $this->activeOrderFilter = $filter;
     }
 }
