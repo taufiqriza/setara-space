@@ -1,4 +1,4 @@
-<div class="h-screen flex flex-col overflow-hidden">
+<div class="h-screen flex flex-col overflow-hidden" x-data="{ showMobileCart: false }">
     
     {{-- Header Bar --}}
     <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 flex-shrink-0">
@@ -11,6 +11,13 @@
                 <i class="far fa-calendar"></i>
                 <span>{{ now()->format('D, d M Y') }}</span>
             </div>
+            
+            {{-- Mobile Cashier Name --}}
+            <div class="flex sm:hidden flex-col">
+                <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Kasir</span>
+                <span class="text-xs font-bold text-gray-700 truncate max-w-[100px]">{{ auth()->user()->name ?? 'Staff' }}</span>
+            </div>
+
             <div class="hidden md:flex items-center gap-2 text-sm text-gray-500">
                 <i class="fas fa-user-circle"></i>
                 <span>{{ auth()->user()->name ?? 'Kasir' }}</span>
@@ -22,11 +29,18 @@
         
         {{-- Right: Status & Time & Refresh --}}
         <div class="flex items-center gap-3">
+            {{-- Printer Connect --}}
+            <button id="posPrinterBtn" class="flex items-center gap-2 text-xs sm:text-sm font-medium px-2 py-1.5 sm:px-3 sm:py-1.5 rounded-lg transition-colors cursor-pointer bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200 mr-2">
+                <i id="posPrinterIcon" class="fas fa-print"></i>
+                <span id="posPrinterText" class="hidden sm:inline">Connect Printer</span>
+            </button>
+            
             {{-- Store Status --}}
             <button wire:click="openStoreStatusModal" 
-                    class="hidden sm:flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer {{ $storeStatus === 'open' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200' }}">
+                    class="flex items-center gap-2 text-xs sm:text-sm font-medium px-2 py-1.5 sm:px-3 sm:py-1.5 rounded-lg transition-colors cursor-pointer {{ $storeStatus === 'open' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200' }}">
                 <span class="w-2 h-2 rounded-full {{ $storeStatus === 'open' ? 'bg-green-500 animate-pulse' : 'bg-red-500' }}"></span>
-                <span>{{ $storeStatus === 'open' ? 'Open Order' : 'Close Order' }}</span>
+                <span class="hidden sm:inline">{{ $storeStatus === 'open' ? 'Open Order' : 'Close Order' }}</span>
+                <span class="sm:hidden">{{ $storeStatus === 'open' ? 'Open' : 'Close' }}</span>
             </button>
 
             <div class="hidden sm:flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
@@ -94,7 +108,7 @@
             </div>
             
             {{-- Product Grid --}}
-            <div class="flex-1 overflow-y-auto px-4 pb-4">
+            <div class="flex-1 overflow-y-auto px-4 pb-24 sm:pb-4">
                 @if($products->count() > 0)
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                         @foreach($products as $product)
@@ -131,13 +145,53 @@
                     </div>
                 @endif
             </div>
+
+            {{-- Mobile Floating Cart Button --}}
+            @if(count($cartItems) > 0)
+                <div class="sm:hidden fixed bottom-4 left-4 right-4 z-40" 
+                     x-show="!showMobileCart"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="translate-y-20 opacity-0"
+                     x-transition:enter-end="translate-y-0 opacity-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="translate-y-0 opacity-100"
+                     x-transition:leave-end="translate-y-20 opacity-0">
+                    <button @click="showMobileCart = true" class="w-full bg-space-800 text-white p-4 rounded-xl shadow-xl flex items-center justify-between border border-space-700">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center font-bold text-lg backdrop-blur-sm">
+                                {{ array_sum(array_column($cartItems, 'quantity')) }}
+                            </div>
+                            <div class="flex flex-col text-left">
+                                <span class="text-xs text-space-200">Total Payment</span>
+                                <span class="font-bold text-lg">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 font-semibold bg-white/10 px-3 py-1.5 rounded-lg text-sm">
+                            View Order <i class="fas fa-chevron-up"></i>
+                        </div>
+                    </button>
+                </div>
+            @endif
         </div>
         
         {{-- RIGHT: Order Panel --}}
-        <div class="w-80 lg:w-96 bg-white border-l border-gray-200 flex flex-col overflow-hidden flex-shrink-0">
+        <div class="fixed inset-0 z-50 bg-white flex flex-col transform transition-transform duration-300 ease-in-out sm:relative sm:translate-y-0 sm:w-80 lg:w-96 sm:border-l sm:border-gray-200 sm:flex-shrink-0 sm:z-0"
+             :class="showMobileCart ? 'translate-y-0' : 'translate-y-full'">
             
             {{-- Order Header --}}
             <div class="p-4 border-b border-gray-100">
+                {{-- Mobile Close Button --}}
+                <div class="flex sm:hidden items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-space-100 text-space-600 flex items-center justify-center">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-gray-900">Current Order</h3>
+                    </div>
+                    <button @click="showMobileCart = false" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2">
                         <i class="fas fa-receipt text-space-600"></i>
@@ -374,82 +428,98 @@
     {{-- Print Receipt Modal --}}
     @if($showReceiptModal && $lastOrder)
         <div class="fixed inset-0 z-[9999] flex items-center justify-center p-6" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden" wire:click.stop>
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col max-h-[90vh]" wire:click.stop>
                 {{-- Header --}}
-                <div class="p-4 text-center border-b border-dashed border-gray-300">
-                    <i class="fas fa-check-circle text-green-500 text-4xl mb-2"></i>
-                    <h3 class="font-bold text-lg text-gray-900">Order Created!</h3>
-                    <p class="text-gray-500 text-sm">{{ $lastOrder['order_number'] }}</p>
+                <div class="p-6 text-center border-b border-dashed border-gray-300 bg-gray-50 flex-shrink-0">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 animate-bounce">
+                        <i class="fas fa-check text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-900">Order Success!</h3>
+                    <p class="text-gray-500 text-sm font-mono mt-1">{{ $lastOrder['order_number'] }}</p>
                 </div>
                 
-                {{-- Receipt Preview --}}
-                <div class="p-4 text-sm" id="receiptContent">
-                    <div class="text-center mb-3">
-                        <h4 class="font-bold">SETARA SPACE</h4>
-                        <p class="text-xs text-gray-500">{{ now()->format('d/m/Y H:i') }}</p>
-                    </div>
-                    
-                    <div class="border-t border-dashed border-gray-300 py-2">
-                        <p><strong>{{ $lastOrder['customer_name'] ?: 'Guest' }}</strong></p>
-                        <p class="text-xs text-gray-500">{{ $lastOrder['table_name'] ?? 'Take Away' }} • {{ ucfirst(str_replace('_', ' ', $lastOrder['order_type'])) }}</p>
-                    </div>
-                    
-                    <div class="border-t border-dashed border-gray-300 py-2 space-y-1">
-                        @foreach($lastOrder['items'] as $item)
-                            <div class="flex justify-between">
-                                <span>{{ $item['quantity'] }}x {{ $item['name'] }}</span>
-                                <span>{{ number_format($item['subtotal'], 0, ',', '.') }}</span>
+                {{-- Receipt Preview (Scrollable) --}}
+                <div class="overflow-y-auto p-6 bg-white" id="receiptContentPos">
+                    {{-- Thermal Printer Layout --}}
+                    <div class="font-mono text-xs leading-relaxed text-gray-900" style="font-family: 'Courier New', Courier, monospace;">
+                        <div class="text-center mb-4">
+                            <h2 class="font-extrabold text-base uppercase">Setara Space</h2>
+                            <p class="text-[10px] text-gray-500">Jl. Soekarno Hatta No. 10</p>
+                            <p class="text-[10px] text-gray-500">Malang, Jawa Timur</p>
+                        </div>
+
+                        <div class="border-b border-dashed border-gray-400 pb-2 mb-2">
+                             <div class="flex justify-between">
+                                <span>Date:</span>
+                                <span>{{ now()->format('d/m/Y H:i') }}</span>
                             </div>
-                        @endforeach
-                    </div>
-                    
-                    <div class="border-t border-dashed border-gray-300 py-2 space-y-1">
-                        <div class="flex justify-between">
-                            <span>Subtotal</span>
-                            <span>{{ number_format($lastOrder['subtotal'], 0, ',', '.') }}</span>
+                            <div class="flex justify-between">
+                                <span>Order:</span>
+                                <span>{{ $lastOrder['order_number'] }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Cashier:</span>
+                                <span>{{ auth()->user()->name ?? 'Staff' }}</span>
+                            </div>
                         </div>
-                        <div class="flex justify-between">
-                            <span>Tax</span>
-                            <span>{{ number_format($lastOrder['tax_amount'], 0, ',', '.') }}</span>
+
+                        {{-- Items --}}
+                        <div class="border-b border-dashed border-gray-400 pb-2 mb-2 space-y-1">
+                             @foreach($lastOrder['items'] as $item)
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <div>{{ $item['name'] }}</div>
+                                        <div class="text-[10px] text-gray-500">{{ $item['quantity'] }} x {{ number_format($item['subtotal'] / $item['quantity'], 0, ',', '.') }}</div>
+                                    </div>
+                                    <div class="font-bold">{{ number_format($item['subtotal'], 0, ',', '.') }}</div>
+                                </div>
+                            @endforeach
                         </div>
-                        <div class="flex justify-between font-bold text-base pt-1">
-                            <span>TOTAL</span>
-                            <span>Rp {{ number_format($lastOrder['total'], 0, ',', '.') }}</span>
+
+                        {{-- Totals --}}
+                        <div class="space-y-1 mb-4">
+                            <div class="flex justify-between">
+                                <span>Subtotal</span>
+                                <span>{{ number_format($lastOrder['subtotal'], 0, ',', '.') }}</span>
+                            </div>
+                            @if($lastOrder['tax_amount'] > 0)
+                            <div class="flex justify-between">
+                                <span>Tax</span>
+                                <span>{{ number_format($lastOrder['tax_amount'], 0, ',', '.') }}</span>
+                            </div>
+                            @endif
+                            <div class="flex justify-between font-bold text-sm border-t border-dashed border-gray-400 pt-1 mt-1">
+                                <span>TOTAL</span>
+                                <span>Rp {{ number_format($lastOrder['total'], 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mt-1">
+                                <span>Payment</span>
+                                <span class="uppercase">{{ $lastOrder['payment_method'] }}</span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="border-t border-dashed border-gray-300 py-2 text-center">
-                        <p class="text-gray-500">Payment: {{ ucfirst($lastOrder['payment_method']) }}</p>
-                        <p class="text-xs text-gray-400 mt-2">Thank you for your order!</p>
+
+                        <div class="text-center text-[10px] mt-4 pt-2 border-t border-dashed border-gray-400">
+                            <p>Thank you for your visit!</p>
+                            <p>Please come again.</p>
+                        </div>
                     </div>
                 </div>
-                
-                {{-- Actions --}}
-                <div class="p-4 bg-gray-50 flex gap-2">
-                    <button wire:click="closeReceiptModal" class="flex-1 py-2.5 text-gray-600 hover:bg-gray-200 font-medium rounded-xl">
+
+                {{-- Footer Actions --}}
+                <div class="p-4 border-t border-gray-100 bg-gray-50 flex gap-3 flex-shrink-0">
+                    <button wire:click="closeReceiptModal" class="flex-1 py-3 text-gray-600 font-medium hover:bg-gray-200 rounded-xl transition-colors">
                         Close
                     </button>
-                    <button onclick="printReceipt()" class="flex-1 py-2.5 bg-space-600 hover:bg-space-700 text-white font-medium rounded-xl">
-                        <i class="fas fa-print mr-1"></i> Print
+                    <button onclick="printReceiptPos('receiptContentPos')" class="flex-[2] py-3 bg-space-800 hover:bg-space-900 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg">
+                        <i class="fas fa-print"></i> Print Receipt（Global)
                     </button>
                 </div>
             </div>
         </div>
-        
-        <script>
-            function printReceipt() {
-                const content = document.getElementById('receiptContent');
-                const printWindow = window.open('', '', 'width=300,height=600');
-                printWindow.document.write('<html><head><title>Receipt</title>');
-                printWindow.document.write('<style>body{font-family:monospace;font-size:12px;padding:10px;} .flex{display:flex;justify-content:space-between;}</style>');
-                printWindow.document.write('</head><body>');
-                printWindow.document.write(content.innerHTML);
-                printWindow.document.write('</body></html>');
-                printWindow.document.close();
-                printWindow.print();
-            }
-        </script>
+
+
     @endif
+
 
     {{-- Order Detail / Status Modal --}}
     @if($showOrderDetailModal && $selectedOrder)
@@ -544,3 +614,135 @@
         </div>
     @endif
 </div>
+
+{{-- Global Print Script (Outside Livewire Updates) --}}
+<script>
+    // Bind POS Header Printer Button
+    document.addEventListener('DOMContentLoaded', () => {
+        const posBtn = document.getElementById('posPrinterBtn');
+        const posIcon = document.getElementById('posPrinterIcon');
+        const posText = document.getElementById('posPrinterText');
+
+        if(posBtn) {
+            // Cek status awal (in case sudah konek dari sesi sebelumnya/reload)
+            if(window.printerManager && window.printerManager.isConnected) {
+                 updatePosPrinterUI(true, window.printerManager.device?.name);
+            }
+
+            posBtn.addEventListener('click', async () => {
+                if (window.printerManager) {
+                     if (window.printerManager.isConnected) {
+                        // Test print jika sudah connect
+                        await window.printerManager.printTest();
+                    } else {
+                        const connected = await window.printerManager.connect();
+                        // UI update akan dihandle oleh event listener global di bawah
+                    }
+                } else {
+                    alert('Printer Manager not loaded properly.');
+                }
+            });
+        }
+
+        // Listen to global events to sync UI
+        window.addEventListener('printer-connected', (e) => {
+            updatePosPrinterUI(true, e.detail?.name);
+        });
+
+        window.addEventListener('printer-disconnected', () => {
+            updatePosPrinterUI(false);
+        });
+
+        function updatePosPrinterUI(connected, name = '') {
+            if(!posBtn || !posIcon || !posText) return;
+            
+            if(connected) {
+                posBtn.className = "flex items-center gap-2 text-xs sm:text-sm font-medium px-2 py-1.5 sm:px-3 sm:py-1.5 rounded-lg transition-colors cursor-pointer bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200 mr-2";
+                posIcon.className = "fas fa-print animate-pulse";
+                posText.textContent = name || "Printer Ready";
+            } else {
+                posBtn.className = "flex items-center gap-2 text-xs sm:text-sm font-medium px-2 py-1.5 sm:px-3 sm:py-1.5 rounded-lg transition-colors cursor-pointer bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200 mr-2";
+                posIcon.className = "fas fa-print";
+                posText.textContent = "Connect Printer";
+            }
+        }
+    });
+
+    // Existing Global Print Function
+    window.printReceiptPos = function(elementId) {
+        // Cek dulu apakah printer bluetooth connected & user mau pake itu?
+        // Untuk sekarang kita Default ke Browser Print (Stabil), 
+        // tapi jika user tekan tombol print, kita bisa kasih opsi atau auto switch.
+        // Implementasi 'Hybrid': Coba print ke bluetooth dulu, kalo gagal/gak ada, baru popup window.
+        
+        if (window.printerManager && window.printerManager.isConnected) {
+             // Logic print ke bluetooth (butuh parsing HTML ke Text/ESC-POS)
+             // Karena parsing HTML ke ESC/POS itu kompleks (butuh library canvas/image), 
+             // SEMENTARA ini kita pakai Browser Print dulu agar 100% works layoutnya.
+             // Print Bluetooth hanya dipakai untuk Test Print via tombol Header dulu.
+        }
+
+        const contentDiv = document.getElementById(elementId);
+        if (!contentDiv) {
+            console.error('Receipt content not found:', elementId);
+            return;
+        }
+        // ... rest of the function ...
+
+
+        const content = contentDiv.innerHTML;
+        const printWindow = window.open('', '', 'width=400,height=600');
+        
+        if (!printWindow) {
+            alert('Please allow popups for this website');
+            return;
+        }
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print Receipt</title>
+                    <style>
+                        @media print {
+                            @page { margin: 0; size: 58mm auto; }
+                            body { margin: 0; padding: 5px; width: 58mm; }
+                        }
+                        body {
+                            font-family: 'Courier New', Courier, monospace;
+                            font-size: 11px;
+                            color: #000;
+                            background: #fff;
+                            width: 58mm; /* Screen preview width */
+                            margin: 0 auto;
+                        }
+                        .text-center { text-align: center; }
+                        .text-right { text-align: right; }
+                        .font-bold { font-weight: bold; }
+                        .uppercase { text-transform: uppercase; }
+                        .flex { display: flex; justify-content: space-between; }
+                        .border-b { border-bottom: 1px dashed #000; margin-bottom: 5px; padding-bottom: 5px; }
+                        .border-t { border-top: 1px dashed #000; margin-top: 5px; padding-top: 5px; }
+                        .mb-2 { margin-bottom: 8px; }
+                        .mb-4 { margin-bottom: 12px; }
+                        .text-xs { font-size: 10px; }
+                        /* Tailwind overrides for print */
+                        .text-gray-500 { color: #000; }
+                        .text-green-600 { color: #000; }
+                    </style>
+                </head>
+                <body>
+                    ${content}
+                    <script>
+                        setTimeout(() => {
+                            window.print();
+                             // Auto close after print dialog closes (some browsers)
+                             // or immediately, let user deal with connection
+                             window.close();
+                        }, 500);
+                    <\/script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+</script>

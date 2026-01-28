@@ -75,11 +75,49 @@ class PosPage extends Component
         $this->taxRate = 10; // Default 10%
     }
     
+    public function getNextOrderNumber()
+    {
+        // New Format: YYYYMMDD-XXX (e.g. 20260128-001)
+        // This guarantees global uniqueness while keeping short sequence per day.
+        $prefix = date('Ymd') . '-';
+        
+        // Find the highest number for TODAY only (matching prefix)
+        // Order::where starts with prefix...
+        $lastOrder = Order::where('order_number', 'like', $prefix . '%')
+            ->withTrashed()
+            ->orderBy('id', 'desc') // Assuming ID is roughly sequential, or use length/substring sort if needed
+            ->first();
+
+        // Default start
+        $nextSequence = 1;
+
+        if ($lastOrder) {
+            // Parse existing: "20260128-005" -> extract "005" -> int(5)
+            // Robust parsing: split by dash
+            $parts = explode('-', $lastOrder->order_number);
+            if (count($parts) === 2 && is_numeric($parts[1])) { // Safety check
+                $nextSequence = (int)$parts[1] + 1;
+            }
+        }
+
+        // Final safety loop (just in case)
+        while (true) {
+            $candidate = $prefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+            
+            $exists = Order::where('order_number', $candidate)->withTrashed()->exists();
+            if (!$exists) {
+                return $candidate;
+            }
+            
+            $nextSequence++;
+             // Panic break
+            if ($nextSequence > 9999) break;
+        }
+    }
+    
     public function getCurrentOrderNumberProperty()
     {
-        // Calculate next order number
-        $todayCount = Order::whereDate('created_at', today())->count();
-        return '#' . str_pad($todayCount + 1, 3, '0', STR_PAD_LEFT);
+        return $this->getNextOrderNumber();
     }
 
     public function render()
@@ -307,7 +345,8 @@ class PosPage extends Component
         try {
             $orderData = DB::transaction(function () {
                 // Generate order number
-                $orderNumber = $this->currentOrderNumber;
+                // Generate order number inside transaction to be safe
+                $orderNumber = $this->getNextOrderNumber();
                 
                 // Get table name if exists
                 $tableName = null;

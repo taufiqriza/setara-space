@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -266,13 +267,41 @@
             </div>
         </div>
         
+        {{-- Printer Status (Sidebar Widget) --}}
+        <div class="px-5 pt-4 pb-2">
+            <button id="printerConnectBtn" class="w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-all rounded-xl p-3 flex items-center justify-between group">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-500 group-hover:text-space-600">
+                        <i id="printerStatusIcon" class="fas fa-print"></i>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-bold text-gray-700">Thermal Printer</p>
+                        <p id="printerStatusText" class="text-[10px] text-gray-500">Tap to connect</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+            </button>
+        </div>
+        
         {{-- Navigation --}}
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="{{ route('control.dashboard') }}" wire:navigate 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.dashboard') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}"
+               @click="sidebarOpen = false">
+                <i class="fas fa-th-large w-5 text-center"></i>
+                <span>Dashboard</span>
+            </a>
             <a href="{{ route('control.pos') }}" wire:navigate 
                class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.pos') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}"
                @click="sidebarOpen = false">
                 <i class="fas fa-cash-register w-5 text-center"></i>
                 <span>Point of Sales</span>
+            </a>
+            <a href="{{ route('control.orders') }}" wire:navigate 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.orders') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}"
+               @click="sidebarOpen = false">
+                <i class="fas fa-history w-5 text-center"></i>
+                <span>Order History</span>
             </a>
             <a href="{{ route('control.activity') }}" wire:navigate 
                class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium {{ request()->routeIs('control.activity') ? 'bg-space-800 text-white' : 'text-gray-600 hover:bg-gray-100' }}"
@@ -355,7 +384,7 @@
     
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        const SwalModal = (icon, title, html) => {
+        window.SwalModal = (icon, title, html) => {
             Swal.fire({
                 icon,
                 title,
@@ -364,12 +393,12 @@
                 timer: 3000,
                 timerProgressBar: true,
                 customClass: {
-                    popup: 'colored-toast', // You can define custom CSS if needed
+                    popup: 'colored-toast',
                 }
             })
         }
 
-        const SwalConfirm = (icon, title, html, confirmButtonText, method, params, callback) => {
+        window.SwalConfirm = (icon, title, html, confirmButtonText, method, params, callback) => {
             Swal.fire({
                 icon,
                 title,
@@ -391,7 +420,7 @@
         document.addEventListener('livewire:initialized', () => {
 
             Livewire.on('swal:modal', (data) => {
-                const dataObj = data[0]; // Livewire 3 returns array arguments
+                const dataObj = data[0];
                 Swal.fire({
                     icon: dataObj.type,
                     title: dataObj.title,
@@ -438,7 +467,7 @@
                 });
             });
 
-            // Compact Centered Notification (Dynamic Island Style)
+            // Compact Centered Notification
             Livewire.on('swal:compact', (data) => {
                 const dataObj = data[0];
                 Swal.fire({
@@ -454,9 +483,9 @@
                     width: 'auto',
                     padding: '0.5rem 1.25rem',
                     backdrop: false,
-                    background: '#1f2937', // Dark gray/almost black
+                    background: '#1f2937',
                     customClass: {
-                        popup: 'rounded-full shadow-2xl border border-gray-700 flex items-center mt-4', // mt-4 pushes it down slightly
+                        popup: 'rounded-full shadow-2xl border border-gray-700 flex items-center mt-4',
                         htmlContainer: 'm-0 p-0 overflow-visible'
                     },
                     showClass: {
@@ -490,6 +519,56 @@
                 customClass: { popup: 'rounded-2xl shadow-xl' }
             });
         @endif
+    </script>
+
+    {{-- Printer Manager Integration --}}
+    <script src="{{ asset('js/printer-manager.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // Printer Status UI Handler
+            const printerStatusIcon = document.getElementById('printerStatusIcon');
+            const printerStatusText = document.getElementById('printerStatusText');
+            const printerBtn = document.getElementById('printerConnectBtn');
+
+            if(printerBtn) {
+                printerBtn.addEventListener('click', async () => {
+                    if (window.printerManager && window.printerManager.isConnected) {
+                         // If already connected, maybe test print or disconnect?
+                         // For now let's just test print to confirm
+                         await window.printerManager.printTest();
+                    } else {
+                        const connected = await window.printerManager.connect();
+                        if(connected) {
+                            // Swal is restored now!
+                            SwalModal('success', 'Printer Connected', 'Ready to print receipts.');
+                        }
+                    }
+                });
+            }
+
+            window.addEventListener('printer-connected', (e) => {
+                if(printerStatusIcon) {
+                    printerStatusIcon.className = 'fas fa-print text-green-500 animate-pulse';
+                    setTimeout(() => printerStatusIcon.className = 'fas fa-print text-green-500', 1000);
+                }
+                if(printerStatusText) {
+                    printerStatusText.textContent = 'Connected: ' + (e.detail?.name || 'Device');
+                    printerStatusText.className = 'text-[10px] text-green-600 font-bold';
+                }
+            });
+
+            window.addEventListener('printer-disconnected', () => {
+                 if(printerStatusIcon) printerStatusIcon.className = 'fas fa-print text-gray-400';
+                 if(printerStatusText) {
+                    printerStatusText.textContent = 'Tap to connect';
+                    printerStatusText.className = 'text-[10px] text-gray-500';
+                 }
+            });
+
+            window.addEventListener('printer-error', (e) => {
+                SwalModal('error', 'Connection Failed', e.detail.message || 'Unknown error');
+            });
+        });
     </script>
 </body>
 </html>

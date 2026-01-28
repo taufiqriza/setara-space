@@ -41,9 +41,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->prefix('control')->name('control.')->group(function () {
     
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('control.dashboard');
-    })->name('dashboard');
+    // Dashboard
+    Route::get('/dashboard', App\Livewire\Control\Dashboard::class)->name('dashboard');
     
     // Logout
     Route::post('/logout', function () {
@@ -58,6 +57,9 @@ Route::middleware('auth')->prefix('control')->name('control.')->group(function (
     
     // Activity (Livewire component)
     Route::get('/activity', App\Livewire\Control\Activity\ActivityDashboard::class)->name('activity');
+
+    // Order History (Livewire component)
+    Route::get('/orders', App\Livewire\Control\Orders\OrderHistory::class)->name('orders');
     
     // Report
     Route::get('/report', App\Livewire\Control\Report\ReportDashboard::class)->name('report');
